@@ -132,6 +132,16 @@ function initCarteTuile(){
                 tuileInsere.type = 'P'
             }
 
+            if(j == objCarteTuile.yFinCarte/objCarteTuile.yLargeurTuile - 6
+                && i >= 6 && i <= 12
+            ){
+                tuileInsere.type = 'P'
+            }
+
+            if((j == 13 || j == 12) && i == 5){
+                tuileInsere.type = 'E'
+            }
+
             objCarteTuile.tabTuile.push(tuileInsere)
         }
     }
@@ -149,8 +159,10 @@ function initJoueur(){
     objJoueur.positionX = 200;
     objJoueur.positionY = 400;
 
-    objJoueur.vitesseY = 1;
-    objJoueur.vitesseX = 1;
+    objJoueur.vitesseY = 2;
+    objJoueur.vitesseX = 2;
+
+    objJoueur.binTomber = true;
 }
 
 /**
@@ -212,15 +224,35 @@ function miseAJourJoueur(){
 
 // Fonctionne plus ou moins (avant le mapping)
 function deplacementJoueur(){
-    if( objControlleurJeu.cleGauche &&
-        objJoueur.positionX > 25 + objJoueur.largeur/2
-    ){
+
+    let binDeplacementGauche = true;
+    let binDeplacementDroite = true;
+
+    if(!objJoueur.binTomber){
+        if(!(objControlleurJeu.cleGauche &&
+            objJoueur.positionX > 25 + objJoueur.largeur/2)
+        ){
+            binDeplacementGauche = false;
+        }
+
+        if(!(objControlleurJeu.cleDroit &&
+            objJoueur.positionX < (objCanvas.width - 25))
+        ){
+            binDeplacementDroite = false;
+        }
+    }
+    else{
+        binDeplacementGauche = false;
+        binDeplacementDroite = false;
+    }
+
+    
+
+    if(binDeplacementGauche){
         objJoueur.positionX -= objJoueur.vitesseX;
     }
 
-    if( objControlleurJeu.cleDroit &&
-        objJoueur.positionX < (objCanvas.width - 25)
-    ){
+    if(binDeplacementDroite){
         objJoueur.positionX += objJoueur.vitesseX;
     }
 }
@@ -235,7 +267,6 @@ function graviteJoueur(){
 
     if(!(objJoueur.positionY < objMurs.tabMurs[2].yDebut)){
         binDescend = false;
-        
     }
 
     objCarteTuile.tabTuile.forEach((tuile) => {
@@ -249,10 +280,14 @@ function graviteJoueur(){
             }
         }
     })
-    
+
+    objJoueur.binTomber = binDescend;
+
     if(binDescend){
         objJoueur.positionY += objJoueur.vitesseY;
     }
+
+    
 }
 
 
@@ -309,19 +344,20 @@ function dessinerUnTuile(strType){
     ${Math.random() * 255}, 
     ${Math.random() * 255})`;
 
-    if(strType == 'V'){
-        objC2D.fillStyle = 'rgb(0,0,0)';
 
-        objC2D.beginPath();
-        objC2D.rect(
-            0,
-            0,
-            objCarteTuile.xLargeurTuile,
-            objCarteTuile.yLargeurTuile
-        )
-        objC2D.fill();
-    }
-    else if(strType == 'B'){
+    // Dessiner le vide
+    objC2D.fillStyle = 'rgb(0,0,0)';
+
+    objC2D.beginPath();
+    objC2D.rect(
+        0,
+        0,
+        objCarteTuile.xLargeurTuile,
+        objCarteTuile.yLargeurTuile
+    )
+    objC2D.fill();
+
+    if(strType == 'B'){
         objC2D.fillStyle = 'rgb(92, 92, 92)';
 
         objC2D.beginPath();
@@ -391,6 +427,42 @@ function dessinerUnTuile(strType){
             objCarteTuile.yLargeurTuile/2 - padBrique*2
         )
         objC2D.fill();
+    }
+    else if(strType == 'E'){
+        let largeurBarrePrincipale = 5;
+
+        objC2D.fillStyle = 'rgb(191, 147, 51)'
+        objC2D.strokeStyle = 'rgb(191, 147, 51)'
+
+        // Barre #1
+        objC2D.beginPath();
+        objC2D.rect(
+            0,
+            0,
+            largeurBarrePrincipale,
+            objCarteTuile.yLargeurTuile
+        )
+        objC2D.fill();
+
+        // Barre #2
+        objC2D.beginPath();
+        objC2D.rect(
+            objCarteTuile.xLargeurTuile - largeurBarrePrincipale,
+            0,
+            objCarteTuile.xLargeurTuile,
+            objCarteTuile.yLargeurTuile
+        )
+        objC2D.fill();        
+
+        // Ajouter les petits barres
+        for(let i = 5; i < objCarteTuile.yLargeurTuile; i += 7){
+            objC2D.beginPath();
+            objC2D.moveTo(0,i);
+            objC2D.lineTo(objCarteTuile.xLargeurTuile,i);
+            objC2D.stroke();
+        }
+
+
     }
 
 }
