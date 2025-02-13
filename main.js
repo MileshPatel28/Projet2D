@@ -13,7 +13,7 @@ var objCarteTuile = null;
 
 var objJoueur = null;
 
-
+var testObjetGit = null;
 /**
  *  -----------------------
  *   Initialization du jeu
