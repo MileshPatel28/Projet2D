@@ -20,7 +20,6 @@ var objCarteTuile = null;
 
 var objJoueur = null;
 
-var testObjetGit = null;
 /**
  *  -----------------------
  *   Initialization du jeu
@@ -43,6 +42,7 @@ function initJeu(){
     initControlleurJeu();
 
     initMurs();
+    initCarteTuile();
 
     initJoueur();
 
@@ -103,14 +103,32 @@ function initMurs(){
     objMurs.tabMurs.push(murGauche);
 }
 
+// Initialize un carte de tuile vide, Il faut encore le peupler avec divers type
+// De plus, le carte de tuile peut seulement dessiner des tuiles vide il faut encore mettre en place 
+// le code pour les tuiles non vide
 function initCarteTuile(){
     objCarteTuile = new Object();
     
-    let xDebutCarte = 25;
-    let yDebutCarte = 25;
-    let xFinCarte = objCanvas.width;
-    let yFinCarte = objCanvas.height;
+    objCarteTuile.xDebutCarte = 25;
+    objCarteTuile.yDebutCarte = 25;
+    objCarteTuile.xFinCarte = objCanvas.width;
+    objCarteTuile.yFinCarte = objCanvas.height;
 
+    objCarteTuile.xLargeurTuile = 50;
+    objCarteTuile.yLargeurTuile = 50;
+
+    objCarteTuile.tabTuile = []
+
+    for(let i = 1; i <= objCarteTuile.xFinCarte/objCarteTuile.xLargeurTuile;i++){
+        for(let j = 1; j <= objCarteTuile.yFinCarte/objCarteTuile.yLargeurTuile; j++){
+            objCarteTuile.tabTuile.push(
+                {tuileX: i, tuileY: j, type: 'vide'}
+            )
+        }
+    }
+
+
+    console.log(objCarteTuile.tabTuile)
     
 }
 
@@ -219,9 +237,42 @@ function graviteJoueur(){
 function dessiner(){
     objC2D.save();
 
+    dessinerTuiles();
+
     dessinerMurs();
 
     dessinerJoueur();
+
+    objC2D.restore();
+}
+
+// Incomplet
+function dessinerTuiles(){
+    objC2D.save();
+
+    objC2D.translate(
+        -25,
+        -25
+    )
+
+    objCarteTuile.tabTuile.forEach((tuile) => {
+        objC2D.fillStyle = `rgb(${Math.random() * 255}, 
+            ${Math.random() * 255}, 
+            ${Math.random() * 255})`;
+
+        if(tuile.type == 'vide'){
+            objC2D.fillStyle = 'rgb(0,0,0)';
+        }
+
+        objC2D.beginPath();
+        objC2D.rect(
+            tuile.tuileX * objCarteTuile.xLargeurTuile,
+            tuile.tuileY * objCarteTuile.yLargeurTuile,
+            (tuile.tuileX + 1) * objCarteTuile.xLargeurTuile,
+            (tuile.tuileY + 1) * objCarteTuile.yLargeurTuile
+        );
+        objC2D.fill();
+    })
 
     objC2D.restore();
 }
