@@ -232,7 +232,7 @@ function miseAJourJoueur(){
 }
 
 
-// Fonctionne plus ou moins (avant le mapping)
+// On doit completmenet le revamp 
 function deplacementJoueur(){
 
     let binDeplacementGauche = true;
@@ -250,11 +250,27 @@ function deplacementJoueur(){
                 && objJoueur.positionY >= tuile.tuileY * objCarteTuile.yLargeurTuile 
                 && objJoueur.positionY <= (tuile.tuileY + 1) * objCarteTuile.yLargeurTuile
             ){
-                
+                tuileActive = tuile;
             }
         })
 
-        console.log(tuileActive)
+        let binSurEchelle = false;
+
+        let tuileBasX = -1;
+        let tuileBasY = -1;
+
+        if(tuileActive.type == 'E'){
+            
+            if(objJoueur.positionX >= tuileActive.tuileX * objCarteTuile.xLargeurTuile - objCarteTuile.xLargeurTuile/2
+                && objJoueur.positionX <= (tuileActive.tuileX+1) * objCarteTuile.xLargeurTuile + objCarteTuile.xLargeurTuile/2
+            ){
+                binSurEchelle = true;
+
+                tuileBasX = tuileActive.tuileX;
+                tuileBasY = tuileActive.tuileY + 1;
+            }
+        }
+
 
         if(!(objControlleurJeu.cleGauche &&
             objJoueur.positionX > 25 + objJoueur.largeur/2)
@@ -270,25 +286,10 @@ function deplacementJoueur(){
 
         // Determiner si le joueur peut interagir avec un echelle
 
-        let binSurEchelle = false;
 
-        let tuileBasX = -1;
-        let tuileBasY = -1;
 
-        objCarteTuile.tabTuile.forEach((tuile) => {
-            if(tuile.type == 'E'){
-                
 
-                if(objJoueur.positionX >= tuile.tuileX * objCarteTuile.xLargeurTuile - objCarteTuile.xLargeurTuile/2
-                    && objJoueur.positionX <= (tuile.tuileX+1) * objCarteTuile.xLargeurTuile + objCarteTuile.xLargeurTuile/2
-                ){
-                    binSurEchelle = true;
 
-                    tuileBasX = tuile.tuileX;
-                    tuileBasY = tuile.tuileY + 1;
-                }
-            }
-        })
 
         if(binSurEchelle && objControlleurJeu.cleHaut){
             binDeplacementHaut = true;
@@ -355,6 +356,9 @@ function graviteJoueur(){
 
     if(binDescend){
         objJoueur.positionY += objJoueur.vitesseY;
+    }
+    else{
+        objJoueur.positionY = (Math.round(objJoueur.positionY/50) * 50 ) + 25
     }
 
     
