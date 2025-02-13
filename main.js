@@ -136,8 +136,6 @@ function initCarteTuile(){
         }
     }
 
-
-    console.log(objCarteTuile.tabTuile)
     
 }
 
@@ -248,7 +246,6 @@ function graviteJoueur(){
                 && positionXFinale <= (tuile.tuileX + 1)*objCarteTuile.xLargeurTuile)
             ){
                     binDescend = false;
-                    console.log((tuile.tuileY + 1)*objCarteTuile.yLargeurTuile)
             }
         }
     })
@@ -270,7 +267,7 @@ function dessiner(){
 
     dessinerTuiles();
 
-    //dessinerMurs();
+    dessinerMurs();
 
     dessinerJoueur();
 
@@ -287,36 +284,74 @@ function dessinerTuiles(){
     )
 
     objCarteTuile.tabTuile.forEach((tuile) => {
-        objC2D.fillStyle = `rgb(${Math.random() * 255}, 
-            ${Math.random() * 255}, 
-            ${Math.random() * 255})`;
+        objC2D.save();
 
-        if(tuile.type == 'vide'){
-            objC2D.fillStyle = 'rgb(0,0,0)';
-        }
-        else if(tuile.type == 'beton'){
-            objC2D.fillStyle = 'rgb(92, 92, 92)';
-        }
-
-        objC2D.beginPath();
-        objC2D.rect(
+        objC2D.translate(
             tuile.tuileX * objCarteTuile.xLargeurTuile,
-            tuile.tuileY * objCarteTuile.yLargeurTuile,
-            (tuile.tuileX + 1) * objCarteTuile.xLargeurTuile,
-            (tuile.tuileY + 1) * objCarteTuile.yLargeurTuile
-        );
-        objC2D.fill();
+            tuile.tuileY * objCarteTuile.yLargeurTuile
+        )
+
+        dessinerUnTuile(tuile.type);
+
+        objC2D.restore();
     })
 
 
-    objC2D.strokeStyle = 'pink'
-    objC2D.beginPath();
-    objC2D.moveTo(0,700);
-    objC2D.lineTo(objCanvas.width,700);
-    objC2D.stroke();
-
     objC2D.restore();
 }
+
+function dessinerUnTuile(strType){
+    objC2D.fillStyle = `rgb(${Math.random() * 255}, 
+    ${Math.random() * 255}, 
+    ${Math.random() * 255})`;
+
+    objC2D.strokeStyle = `rgb(${Math.random() * 255}, 
+    ${Math.random() * 255}, 
+    ${Math.random() * 255})`;
+
+    if(strType == 'vide'){
+        objC2D.fillStyle = 'rgb(0,0,0)';
+
+        objC2D.beginPath();
+        objC2D.rect(
+            0,
+            0,
+            objCarteTuile.xLargeurTuile,
+            objCarteTuile.yLargeurTuile
+        )
+        objC2D.fill();
+    }
+    else if(strType == 'beton'){
+        objC2D.fillStyle = 'rgb(92, 92, 92)';
+
+        objC2D.beginPath();
+        objC2D.rect(
+            0,
+            0,
+            objCarteTuile.xLargeurTuile,
+            objCarteTuile.yLargeurTuile
+        )
+        objC2D.fill();
+
+
+        objC2D.fillStyle = 'rgb(54, 54, 54)'
+        let padTuile = 5;
+
+        objC2D.beginPath();
+        objC2D.rect(
+            padTuile,
+            padTuile,
+            objCarteTuile.xLargeurTuile - padTuile*2,
+            objCarteTuile.yLargeurTuile - padTuile*2
+        )
+        objC2D.fill();
+    }
+    else if(strType == ''){
+
+    }
+
+}
+
 
 function dessinerMurs(){
     objC2D.save();
