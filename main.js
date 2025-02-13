@@ -121,9 +121,18 @@ function initCarteTuile(){
 
     for(let i = 1; i <= objCarteTuile.xFinCarte/objCarteTuile.xLargeurTuile;i++){
         for(let j = 1; j <= objCarteTuile.yFinCarte/objCarteTuile.yLargeurTuile; j++){
-            objCarteTuile.tabTuile.push(
-                {tuileX: i, tuileY: j, type: 'vide'}
-            )
+
+            let tuileInsere = {tuileX: i, tuileY: j, type: 'vide'}
+
+            if(j >= objCarteTuile.yFinCarte/objCarteTuile.yLargeurTuile - 3){
+                tuileInsere.type = 'beton'
+            }
+
+            if(j == objCarteTuile.yFinCarte/objCarteTuile.yLargeurTuile - 4){
+                tuileInsere.type = 'planch'
+            }
+
+            objCarteTuile.tabTuile.push(tuileInsere)
         }
     }
 
@@ -137,7 +146,7 @@ function initJoueur(){
     objJoueur = new Object();
 
     objJoueur.largeur = 100;
-    objJoueur.hauteur = 200;
+    objJoueur.hauteur = 100;
 
     objJoueur.positionX = 200;
     objJoueur.positionY = 400;
@@ -221,10 +230,32 @@ function deplacementJoueur(){
 // A programmer
 function graviteJoueur(){
     
-    if(objJoueur.positionY < objMurs.tabMurs[2].yDebut){
+    let binDescend = true;
+
+    let positionYFinale = objJoueur.positionY + objJoueur.vitesseY + objCarteTuile.yLargeurTuile/2
+    let positionXFinale = objJoueur.positionX;
+
+    if(!(objJoueur.positionY < objMurs.tabMurs[2].yDebut)){
+        binDescend = false;
+        
+    }
+
+    objCarteTuile.tabTuile.forEach((tuile) => {
+        if(tuile.type != 'vide'){
+            if( (positionYFinale >= (tuile.tuileY)*objCarteTuile.yLargeurTuile 
+                && positionYFinale <= (tuile.tuileY + 1)*objCarteTuile.yLargeurTuile)
+                && (positionXFinale >= (tuile.tuileX)*objCarteTuile.xLargeurTuile
+                && positionXFinale <= (tuile.tuileX + 1)*objCarteTuile.xLargeurTuile)
+            ){
+                    binDescend = false;
+                    console.log((tuile.tuileY + 1)*objCarteTuile.yLargeurTuile)
+            }
+        }
+    })
+    
+    if(binDescend){
         objJoueur.positionY += objJoueur.vitesseY;
     }
-    
 }
 
 
@@ -239,7 +270,7 @@ function dessiner(){
 
     dessinerTuiles();
 
-    dessinerMurs();
+    //dessinerMurs();
 
     dessinerJoueur();
 
@@ -263,6 +294,9 @@ function dessinerTuiles(){
         if(tuile.type == 'vide'){
             objC2D.fillStyle = 'rgb(0,0,0)';
         }
+        else if(tuile.type == 'beton'){
+            objC2D.fillStyle = 'rgb(92, 92, 92)';
+        }
 
         objC2D.beginPath();
         objC2D.rect(
@@ -273,6 +307,13 @@ function dessinerTuiles(){
         );
         objC2D.fill();
     })
+
+
+    objC2D.strokeStyle = 'pink'
+    objC2D.beginPath();
+    objC2D.moveTo(0,700);
+    objC2D.lineTo(objCanvas.width,700);
+    objC2D.stroke();
 
     objC2D.restore();
 }
