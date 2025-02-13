@@ -54,7 +54,7 @@ function initControlleurJeu(){
     objControlleurJeu = new Object();
 
     objControlleurJeu.cleHaut = false;
-    // objControlleurJeu.cleBas = false;
+    objControlleurJeu.cleBas = false;
     objControlleurJeu.cleGauche = false;
     objControlleurJeu.cleDroit = false;
 
@@ -128,7 +128,9 @@ function initCarteTuile(){
                 tuileInsere.type = 'B'
             }
 
-            if(j == objCarteTuile.yFinCarte/objCarteTuile.yLargeurTuile - 4){
+            if(j == objCarteTuile.yFinCarte/objCarteTuile.yLargeurTuile - 4
+                && i >= 2
+            ){
                 tuileInsere.type = 'P'
             }
 
@@ -139,6 +141,10 @@ function initCarteTuile(){
             }
 
             if((j == 13 || j == 12) && i == 5){
+                tuileInsere.type = 'E'
+            }
+
+            if((j == 13 || j == 12) && i == 15){
                 tuileInsere.type = 'E'
             }
 
@@ -204,13 +210,17 @@ function mettreAjourAnimation(){
 
 // Évenement pour détecter les touches du utilisateur
 document.addEventListener('keydown', (event) => {
+    if (event.key == 'ArrowUp') objControlleurJeu.cleHaut = true;
     if (event.key == 'ArrowLeft') objControlleurJeu.cleGauche = true;
     if (event.key == 'ArrowRight') objControlleurJeu.cleDroit = true;
+    if (event.key == 'ArrowDown') objControlleurJeu.cleBas = true;
 })
 
 document.addEventListener('keyup', (event) => {
+    if (event.key == 'ArrowUp') objControlleurJeu.cleHaut = false;
     if (event.key == 'ArrowLeft') objControlleurJeu.cleGauche = false;
     if (event.key == 'ArrowRight') objControlleurJeu.cleDroit = false;
+    if (event.key == 'ArrowDown') objControlleurJeu.cleBas = false;
 })
 
 
@@ -227,6 +237,8 @@ function deplacementJoueur(){
 
     let binDeplacementGauche = true;
     let binDeplacementDroite = true;
+    let binDeplacementHaut = false;
+    let binDeplacementBas = false;
 
     if(!objJoueur.binTomber){
         if(!(objControlleurJeu.cleGauche &&
@@ -240,13 +252,56 @@ function deplacementJoueur(){
         ){
             binDeplacementDroite = false;
         }
+
+        // Determiner si le joueur peut interagir avec un echelle
+
+        let binSurEchelle = false;
+
+        let tuileBasX = -1;
+        let tuileBasY = -1;
+
+        objCarteTuile.tabTuile.forEach((tuile) => {
+            if(tuile.type == 'E'){
+                
+
+                if(objJoueur.positionX >= tuile.tuileX * objCarteTuile.xLargeurTuile - objCarteTuile.xLargeurTuile/2
+                    && objJoueur.positionX <= (tuile.tuileX+1) * objCarteTuile.xLargeurTuile + objCarteTuile.xLargeurTuile/2
+                ){
+                    binSurEchelle = true;
+
+                    tuileBasX = tuile.tuileX;
+                    tuileBasY = tuile.tuileY + 1;
+                }
+            }
+        })
+
+        if(binSurEchelle && objControlleurJeu.cleHaut){
+            binDeplacementHaut = true;
+        }
+
+
+        let positionFinaleYBas = objJoueur.positionY + objJoueur.vitesseY + objCarteTuile.yLargeurTuile/2
+
+        if( binSurEchelle 
+            && objControlleurJeu.cleBas
+            && positionFinaleYBas <= tuileBasY * objCarteTuile.yLargeurTuile
+        ){
+            binDeplacementBas = true;
+        }
     }
     else{
         binDeplacementGauche = false;
         binDeplacementDroite = false;
     }
 
-    
+
+    if(binDeplacementHaut){
+        objJoueur.positionY -= objJoueur.vitesseY
+    }
+
+    if(binDeplacementBas){
+        objJoueur.positionY += objJoueur.vitesseY
+    }
 
     if(binDeplacementGauche){
         objJoueur.positionX -= objJoueur.vitesseX;
@@ -273,8 +328,8 @@ function graviteJoueur(){
         if(tuile.type != 'V'){
             if( (positionYFinale >= (tuile.tuileY)*objCarteTuile.yLargeurTuile 
                 && positionYFinale <= (tuile.tuileY + 1)*objCarteTuile.yLargeurTuile)
-                && (positionXFinale >= (tuile.tuileX)*objCarteTuile.xLargeurTuile
-                && positionXFinale <= (tuile.tuileX + 1)*objCarteTuile.xLargeurTuile)
+                && (positionXFinale + objCarteTuile.xLargeurTuile/2 >= (tuile.tuileX)*objCarteTuile.xLargeurTuile
+                && positionXFinale - objCarteTuile.xLargeurTuile/2 <= (tuile.tuileX + 1)*objCarteTuile.xLargeurTuile)
             ){
                     binDescend = false;
             }
