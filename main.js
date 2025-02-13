@@ -254,7 +254,6 @@ function deplacementJoueur(){
             }
         })
 
-        console.log(tuileActive)
 
         if(!(objControlleurJeu.cleGauche &&
             objJoueur.positionX > 25 + objJoueur.largeur/2)
