@@ -159,8 +159,8 @@ function initCarteTuile(){
 function initJoueur(){
     objJoueur = new Object();
 
-    objJoueur.largeur = 100;
-    objJoueur.hauteur = 100;
+    objJoueur.largeur = 75;
+    objJoueur.hauteur = 75;
 
     objJoueur.positionX = 200;
     objJoueur.positionY = 400;
@@ -241,6 +241,21 @@ function deplacementJoueur(){
     let binDeplacementBas = false;
 
     if(!objJoueur.binTomber){
+
+        let tuileActive = {}
+
+        objCarteTuile.tabTuile.forEach((tuile) => {
+            if(objJoueur.positionX >= tuile.tuileX * objCarteTuile.xLargeurTuile 
+                && objJoueur.positionX <= (tuile.tuileX + 1) * objCarteTuile.xLargeurTuile
+                && objJoueur.positionY >= tuile.tuileY * objCarteTuile.yLargeurTuile 
+                && objJoueur.positionY <= (tuile.tuileY + 1) * objCarteTuile.yLargeurTuile
+            ){
+                
+            }
+        })
+
+        console.log(tuileActive)
+
         if(!(objControlleurJeu.cleGauche &&
             objJoueur.positionX > 25 + objJoueur.largeur/2)
         ){
