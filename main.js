@@ -103,9 +103,9 @@ function initMurs(){
     objMurs.tabMurs.push(murGauche);
 }
 
-// Initialize un carte de tuile vide, Il faut encore le peupler avec divers type
-// De plus, le carte de tuile peut seulement dessiner des tuiles vide il faut encore mettre en place 
-// le code pour les tuiles non vide
+// Initialize un carte de tuile V, Il faut encore le peupler avec divers type
+// De plus, le carte de tuile peut seulement dessiner des tuiles V il faut encore mettre en place 
+// le code pour les tuiles non V
 function initCarteTuile(){
     objCarteTuile = new Object();
     
@@ -122,14 +122,14 @@ function initCarteTuile(){
     for(let i = 1; i <= objCarteTuile.xFinCarte/objCarteTuile.xLargeurTuile;i++){
         for(let j = 1; j <= objCarteTuile.yFinCarte/objCarteTuile.yLargeurTuile; j++){
 
-            let tuileInsere = {tuileX: i, tuileY: j, type: 'vide'}
+            let tuileInsere = {tuileX: i, tuileY: j, type: 'V'}
 
             if(j >= objCarteTuile.yFinCarte/objCarteTuile.yLargeurTuile - 3){
-                tuileInsere.type = 'beton'
+                tuileInsere.type = 'B'
             }
 
             if(j == objCarteTuile.yFinCarte/objCarteTuile.yLargeurTuile - 4){
-                tuileInsere.type = 'planch'
+                tuileInsere.type = 'P'
             }
 
             objCarteTuile.tabTuile.push(tuileInsere)
@@ -239,7 +239,7 @@ function graviteJoueur(){
     }
 
     objCarteTuile.tabTuile.forEach((tuile) => {
-        if(tuile.type != 'vide'){
+        if(tuile.type != 'V'){
             if( (positionYFinale >= (tuile.tuileY)*objCarteTuile.yLargeurTuile 
                 && positionYFinale <= (tuile.tuileY + 1)*objCarteTuile.yLargeurTuile)
                 && (positionXFinale >= (tuile.tuileX)*objCarteTuile.xLargeurTuile
@@ -309,7 +309,7 @@ function dessinerUnTuile(strType){
     ${Math.random() * 255}, 
     ${Math.random() * 255})`;
 
-    if(strType == 'vide'){
+    if(strType == 'V'){
         objC2D.fillStyle = 'rgb(0,0,0)';
 
         objC2D.beginPath();
@@ -321,7 +321,7 @@ function dessinerUnTuile(strType){
         )
         objC2D.fill();
     }
-    else if(strType == 'beton'){
+    else if(strType == 'B'){
         objC2D.fillStyle = 'rgb(92, 92, 92)';
 
         objC2D.beginPath();
@@ -346,8 +346,51 @@ function dessinerUnTuile(strType){
         )
         objC2D.fill();
     }
-    else if(strType == ''){
+    else if(strType == 'P'){
 
+        // Base du paserelle
+        objC2D.fillStyle = 'rgb(72, 72, 72)'
+        objC2D.beginPath();
+        objC2D.rect(
+            0,
+            0,
+            objCarteTuile.xLargeurTuile,
+            objCarteTuile.yLargeurTuile
+        )
+        objC2D.fill();
+
+
+        // Les briques
+        let padBrique = 3;
+
+        objC2D.fillStyle = 'rgb(191, 51, 51)'
+
+        objC2D.beginPath();
+        objC2D.rect(
+            padBrique,
+            padBrique,
+            objCarteTuile.xLargeurTuile/2 - padBrique,
+            objCarteTuile.yLargeurTuile/2 - padBrique
+        )
+        objC2D.fill();
+
+        objC2D.beginPath();
+        objC2D.rect(
+            objCarteTuile.xLargeurTuile/2 + padBrique,
+            padBrique,
+            objCarteTuile.xLargeurTuile/2 - padBrique*2,
+            objCarteTuile.yLargeurTuile/2 - padBrique
+        )
+        objC2D.fill();
+
+        objC2D.beginPath();
+        objC2D.rect(
+            padBrique,
+            objCarteTuile.yLargeurTuile/2 + padBrique,
+            objCarteTuile.xLargeurTuile - padBrique*2,
+            objCarteTuile.yLargeurTuile/2 - padBrique*2
+        )
+        objC2D.fill();
     }
 
 }
