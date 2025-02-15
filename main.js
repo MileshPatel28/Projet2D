@@ -20,6 +20,8 @@ var objCarteTuile = null;
 
 var objJoueur = null;
 
+
+
 /**
  *  -----------------------
  *   Initialization du jeu
@@ -122,29 +124,37 @@ function initCarteTuile(){
 
     objCarteTuile.tabTuile = []
 
-    for(let i = 1; i <= objCarteTuile.xFinCarte/objCarteTuile.xLargeurTuile;i++){
-        for(let j = 1; j <= objCarteTuile.yFinCarte/objCarteTuile.yLargeurTuile; j++){
+    for(let x = 1; x <= objCarteTuile.xFinCarte/objCarteTuile.xLargeurTuile;x++){
+        for(let y = 1; y <= objCarteTuile.yFinCarte/objCarteTuile.yLargeurTuile; y++){
 
-            let tuileInsere = {tuileX: i, tuileY: j, type: 'V'}
+            let tuileInsere = {tuileX: x, tuileY: y, type: 'V'}
 
-            if(j >= objCarteTuile.yFinCarte/objCarteTuile.yLargeurTuile - 3){
+            if(y >= objCarteTuile.yFinCarte/objCarteTuile.yLargeurTuile - 3){
                 tuileInsere.type = 'B'
             }
 
-            if(j == objCarteTuile.yFinCarte/objCarteTuile.yLargeurTuile - 4
-                && i >= 1
+            if(y == objCarteTuile.yFinCarte/objCarteTuile.yLargeurTuile - 4
+                && x >= 1
             ){
                 tuileInsere.type = 'P'
             }
 
-            if(j == objCarteTuile.yFinCarte/objCarteTuile.yLargeurTuile - 6
-                && i >= 6 && i <= 12
+            if(y == objCarteTuile.yFinCarte/objCarteTuile.yLargeurTuile - 6
+                && x >= 6 && x <= 12
             ){
                 tuileInsere.type = 'P'
             }
 
-            if((j == 13 || j == 12) && i == 5){
+            if((y == 13 || y == 12) && x == 13){
                 tuileInsere.type = 'E'
+            }
+
+            if(y == 13 && x == 16){
+                tuileInsere.type = 'P'
+            }
+
+            if(y == 13 && x == 10){
+                tuileInsere.type = 'P'
             }
 
 
@@ -160,11 +170,11 @@ function initCarteTuile(){
 function initJoueur(){
     objJoueur = new Object();
 
-    objJoueur.largeur = 75;
-    objJoueur.hauteur = 75;
+    objJoueur.largeur = 50;
+    objJoueur.hauteur = 50;
 
-    objJoueur.positionX = 300; // Changer a objCanvas.width/2
-    objJoueur.positionY = 675;
+    objJoueur.positionX = objCanvas.width/2; // Changer a objCanvas.width/2
+    objJoueur.positionY = 400;
 
     objJoueur.vitesseY = 2;
     objJoueur.vitesseX = 2;
@@ -290,7 +300,7 @@ function deplacementJoueur(){
             if( tuileGauche && 
                 tuileGauche.type != 'V' && 
                 tuileGauche.type != 'E' &&
-                !((objJoueur.positionX - objJoueur.largeur/2) > tuileGauche.tuileX*objCarteTuile.xLargeurTuile + objCarteTuile.xLargeurTuile/2)
+                !((objJoueur.positionX - objJoueur.largeur/2) > (tuileGauche.tuileX+1)*objCarteTuile.xLargeurTuile)
             ){
                 binDeplacementGauche = false;
             }
@@ -313,7 +323,7 @@ function deplacementJoueur(){
              if( tuileDroit &&
                  tuileDroit.type != 'V' && 
                  tuileDroit.type != 'E' &&
-                 !((objJoueur.positionX) < tuileDroit.tuileX*objCarteTuile.xLargeurTuile - objCarteTuile.xLargeurTuile/2)
+                 !((objJoueur.positionX + objJoueur.largeur/2) < tuileDroit.tuileX*objCarteTuile.xLargeurTuile)
              ){
                  binDeplacementDroite = false;
              }
@@ -396,7 +406,7 @@ function graviteJoueur(){
     
     let binDescend = true;
 
-    let positionYFinale = objJoueur.positionY + objJoueur.vitesseY + objCarteTuile.yLargeurTuile/2
+    let positionYFinale = objJoueur.positionY + objJoueur.vitesseY + objJoueur.hauteur / 2;
     let positionXFinale = objJoueur.positionX;
 
     if(!(objJoueur.positionY < objMurs.tabMurs[2].yDebut)){
@@ -405,18 +415,20 @@ function graviteJoueur(){
 
     let tuileBas = {}
 
+
     objCarteTuile.tabTuile.forEach((tuile) => {
-        if(tuile.type != 'V'){
+        if(binDescend && tuile.type != 'V'){
             if( (positionYFinale >= (tuile.tuileY)*objCarteTuile.yLargeurTuile 
                 && positionYFinale <= (tuile.tuileY + 1)*objCarteTuile.yLargeurTuile)
-                && (positionXFinale + objCarteTuile.xLargeurTuile/2 >= (tuile.tuileX)*objCarteTuile.xLargeurTuile
-                && positionXFinale - objCarteTuile.xLargeurTuile/2 <= (tuile.tuileX + 1)*objCarteTuile.xLargeurTuile)
+                && (positionXFinale + objJoueur.largeur/2 >= (tuile.tuileX)*objCarteTuile.xLargeurTuile
+                && positionXFinale - objJoueur.largeur/2  <= (tuile.tuileX + 1)*objCarteTuile.xLargeurTuile)
             ){
-                    binDescend = false;
-                    tuileBas = tuile;
+                binDescend = false;
+                tuileBas = tuile;
             }
         }
     })
+    
 
     objJoueur.binTomber = binDescend;
 
@@ -424,10 +436,6 @@ function graviteJoueur(){
     if(binDescend){
         objJoueur.positionY += objJoueur.vitesseY;
     }
-    // else if(!(objControlleurJeu.cleHaut || objControlleurJeu.cleBas) 
-    //     && (objJoueur.tuileActive.type != 'E' || objJoueur.tuileActive.type != 'P' )){
-    //     objJoueur.positionY = ((tuileBas.tuileY - 1) * objCarteTuile.yLargeurTuile + objCarteTuile.yLargeurTuile/2)
-    // }
     
 }
 
@@ -440,6 +448,7 @@ function graviteJoueur(){
 
 function dessiner(){
     objC2D.save();
+
 
     dessinerTuiles();
 
@@ -633,6 +642,11 @@ function dessinerMurs(){
 function dessinerJoueur(){
     objC2D.save();
 
+    objC2D.translate(
+        -25,
+        -25
+    )
+
     objC2D.fillStyle = 'blue'
     objC2D.translate(
         objJoueur.positionX,
@@ -643,10 +657,21 @@ function dessinerJoueur(){
     objC2D.rect(
         -objJoueur.largeur/2,
         -objJoueur.hauteur/2,
-        objJoueur.largeur/2,
-        objJoueur.hauteur/2
+        objJoueur.largeur,
+        objJoueur.hauteur
     )
     objC2D.fill();
 
-    objC2D.restore();
+
+    // Debug
+    objC2D.beginPath();
+    objC2D.arc(0, 0, 5, 0, 2 * Math.PI);
+    objC2D.fillStyle = "red";
+    objC2D.fill();
+    objC2D.lineWidth = 4;
+    objC2D.strokeStyle = "blue";
+    objC2D.stroke();
+
 }
+
+
