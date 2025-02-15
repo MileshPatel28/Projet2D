@@ -114,8 +114,8 @@ function initMurs(){
 function initCarteTuile(){
     objCarteTuile = new Object();
     
-    objCarteTuile.xDebutCarte = 25;
-    objCarteTuile.yDebutCarte = 25;
+    objCarteTuile.xAlignementCarte = -25;
+    objCarteTuile.yAlignementCarte = -25;
     objCarteTuile.xFinCarte = objCanvas.width;
     objCarteTuile.yFinCarte = objCanvas.height;
 
@@ -396,7 +396,7 @@ function deplacementJoueur(){
     }
 
     if(objJoueur.binGrimpeEchelle){
-        objJoueur.positionX = (objJoueur.tuileActive.tuileX * objCarteTuile.xLargeurTuile + objJoueur.largeur/4)
+        objJoueur.positionX = (objJoueur.tuileActive.tuileX * objCarteTuile.xLargeurTuile + objJoueur.largeur/2)
     }
     
 }
@@ -464,8 +464,8 @@ function dessinerTuiles(){
     objC2D.save();
 
     objC2D.translate(
-        -25,
-        -25
+        objCarteTuile.xAlignementCarte,
+        objCarteTuile.yAlignementCarte
     )
 
     objCarteTuile.tabTuile.forEach((tuile) => {
@@ -643,8 +643,8 @@ function dessinerJoueur(){
     objC2D.save();
 
     objC2D.translate(
-        -25,
-        -25
+        objCarteTuile.xAlignementCarte,
+        objCarteTuile.yAlignementCarte
     )
 
     objC2D.fillStyle = 'blue'
