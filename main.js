@@ -173,8 +173,8 @@ function initJoueur(){
     objJoueur.largeur = 50;
     objJoueur.hauteur = 50;
 
-    objJoueur.positionX = objCanvas.width/2; // Changer a objCanvas.width/2
-    objJoueur.positionY = 400;
+    objJoueur.positionX = objCanvas.width/2 + 25; // Changer a objCanvas.width/2
+    objJoueur.positionY = 650;
 
     objJoueur.vitesseY = 2;
     objJoueur.vitesseX = 2;
@@ -334,44 +334,45 @@ function deplacementJoueur(){
              
          }
 
-         let tuileEnBas = tuileEntourage.find(
+         
+
+        // ========= Deplacement Vertical ==========
+
+
+
+        let tuileEnBas = tuileEntourage.find(
             (tuile) => 
                 tuile.tuileX == objJoueur.tuileActive.tuileX &&
                 tuile.tuileY == objJoueur.tuileActive.tuileY + 1
         )
 
-        // Deplacement vertical
-        if(
-            (objJoueur.tuileActive.type == 'E') ||
-            (tuileEnBas && tuileEnBas.type == 'E')
-        ){
-            
-            if((tuileEnBas && tuileEnBas.type == 'E') && !(objJoueur.tuileActive.type == 'E')){
-                objJoueur.binGrimpeEchelle = false;
+        
+
+        if(objControlleurJeu.cleHaut){
+            if(objJoueur.tuileActive.type == 'E' || tuileEnBas.type == 'E'){
+                if(objJoueur.tuileActive.type == 'E' || tuileEnBas.tuileY*objCarteTuile.yLargeurTuile <= objJoueur.positionY + objJoueur.hauteur/2){
+                    binDeplacementHaut = true;
+                    objJoueur.binGrimpeEchelle = true;
+                }
+                else{
+                    objJoueur.binGrimpeEchelle = false;
+                }
             }
-
-            if(objJoueur.binGrimpeEchelle){
-                binDeplacementGauche = false;
-                binDeplacementDroite = false;
-            }
-
-            if(objControlleurJeu.cleHaut){
-                binDeplacementHaut = true;
-                objJoueur.binGrimpeEchelle = true;
-            }
-
-            console.log(objJoueur.positionY + objJoueur.hauteur/2 + "??" + tuileEnBas.tuileY * objCarteTuile.yLargeurTuile)
-
-            if( objControlleurJeu.cleBas && 
-                (tuileEnBas && tuileEnBas.type == 'E' ||
-                 objJoueur.positionY + objJoueur.hauteur/2 <= tuileEnBas.tuileY * objCarteTuile.yLargeurTuile)
-            ){
-                binDeplacementBas = true;
-                objJoueur.binGrimpeEchelle = true;
-            }
-
-
         }
+
+
+        if(objControlleurJeu.cleBas){
+            if( (objJoueur.tuileActive.type == 'E' || tuileEnBas.type == 'E')){
+                if(tuileEnBas.type == 'E' || tuileEnBas.tuileY*objCarteTuile.yLargeurTuile > objJoueur.positionY + objJoueur.hauteur/2){
+                    binDeplacementBas = true;
+                    objJoueur.binGrimpeEchelle = true;
+                }
+                else{
+                    objJoueur.binGrimpeEchelle = false;
+                }
+            }
+        }
+
     }
     else{
         binDeplacementGauche = false;
