@@ -116,6 +116,7 @@ function initMurs(){
 // B = Béton
 // P = Paserelle
 // E = Echelle
+// F = Barre de franchissement
 
 function initCarteTuile(){
     objCarteTuile = new Object();
@@ -193,6 +194,12 @@ function initCarteTuile(){
                 tuileInsere.type = 'E'
             }
             
+            // Barre de franchissement
+            if( y == 13 && (x >= 11 && x <= 20) ||
+                y == 4 && (x >= 9 && x <= 17)
+            ){
+                tuileInsere.type = 'F'
+            }
 
             objCarteTuile.tabTuile.push(tuileInsere)
         }
@@ -649,6 +656,19 @@ function dessinerUnTuile(strType){
         }
 
 
+    }
+    else if(strType == 'F'){
+        // Barre de franchissement
+                // Base du paserelle
+                objC2D.fillStyle = 'rgb(135, 58, 32)'
+                objC2D.beginPath();
+                objC2D.rect(
+                    0,
+                    3,
+                    objCarteTuile.xLargeurTuile,
+                    5
+                )
+                objC2D.fill();
     }
 
 }
