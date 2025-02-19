@@ -218,11 +218,13 @@ function initJoueur(){
     objJoueur.positionX = objCanvas.width/1.25 + 25; // Changer a objCanvas.width/2
     objJoueur.positionY = 125; //625
 
-    objJoueur.vitesseY = 2;
+    objJoueur.vitesseY = 3;
     objJoueur.vitesseX = 4;
 
     objJoueur.binTomber = true;
     objJoueur.tuileActive = {};
+
+    objJoueur.tuileEntourage = []
 
     objJoueur.binGrimpeEchelle = false;
 }
@@ -287,7 +289,29 @@ document.addEventListener('keyup', (event) => {
 // Joueur Logique
 
 function miseAJourJoueur(){
-    
+
+    objJoueur.tuileActive = {}
+
+    objJoueur.tuileEntourage = []
+
+    // Cette partie pourrait être un peu taxant sur l'application mais ça marche!
+    objCarteTuile.tabTuile.forEach((tuile) => {
+        if(objJoueur.positionX >= (tuile.tuileX) * objCarteTuile.xLargeurTuile 
+            && objJoueur.positionX <= (tuile.tuileX + 1) * objCarteTuile.xLargeurTuile
+            && objJoueur.positionY >= (tuile.tuileY) * objCarteTuile.yLargeurTuile 
+            && objJoueur.positionY <= (tuile.tuileY + 1) * objCarteTuile.yLargeurTuile
+        ){
+            objJoueur.tuileActive = tuile;
+        }
+    })
+
+    if(objJoueur.tuileActive){
+        objJoueur.tuileEntourage = objCarteTuile.tabTuile.filter(tuile => 
+            tuile.tuileX >= objJoueur.tuileActive.tuileX - 1 && tuile.tuileX <= objJoueur.tuileActive.tuileX + 1 &&
+            tuile.tuileY >= objJoueur.tuileActive.tuileY - 1 && tuile.tuileY <= objJoueur.tuileActive.tuileY + 1
+        )
+    }
+
     graviteJoueur()
     deplacementJoueur()
 }
@@ -303,31 +327,10 @@ function deplacementJoueur(){
 
     if(!objJoueur.binTomber){
 
-        objJoueur.tuileActive = {}
-
-        let tuileEntourage = []
-
-        // Cette partie pourrait être un peu taxant sur l'application mais ça marche!
-        objCarteTuile.tabTuile.forEach((tuile) => {
-            if(objJoueur.positionX >= (tuile.tuileX) * objCarteTuile.xLargeurTuile 
-                && objJoueur.positionX <= (tuile.tuileX + 1) * objCarteTuile.xLargeurTuile
-                && objJoueur.positionY >= (tuile.tuileY) * objCarteTuile.yLargeurTuile 
-                && objJoueur.positionY <= (tuile.tuileY + 1) * objCarteTuile.yLargeurTuile
-            ){
-                objJoueur.tuileActive = tuile;
-            }
-        })
-
-        if(objJoueur.tuileActive){
-            tuileEntourage = objCarteTuile.tabTuile.filter(tuile => 
-                tuile.tuileX >= objJoueur.tuileActive.tuileX - 1 && tuile.tuileX <= objJoueur.tuileActive.tuileX + 1 &&
-                tuile.tuileY >= objJoueur.tuileActive.tuileY - 1 && tuile.tuileY <= objJoueur.tuileActive.tuileY + 1
-            )
-        }
 
 
         // ===== Deplacement Horizontal ===== 
-        let tuileGauche = tuileEntourage.find(
+        let tuileGauche = objJoueur.tuileEntourage.find(
             (tuile) => 
                 tuile.tuileX == objJoueur.tuileActive.tuileX - 1 &&
                 tuile.tuileY == objJoueur.tuileActive.tuileY
@@ -351,7 +354,7 @@ function deplacementJoueur(){
         }
 
 
-        let tuileDroit = tuileEntourage.find(
+        let tuileDroit = objJoueur.tuileEntourage.find(
             (tuile) => 
                 tuile.tuileX == objJoueur.tuileActive.tuileX + 1 &&
                 tuile.tuileY == objJoueur.tuileActive.tuileY
@@ -382,7 +385,7 @@ function deplacementJoueur(){
 
 
 
-        let tuileEnBas = tuileEntourage.find(
+        let tuileEnBas = objJoueur.tuileEntourage.find(
             (tuile) => 
                 tuile.tuileX == objJoueur.tuileActive.tuileX &&
                 tuile.tuileY == objJoueur.tuileActive.tuileY + 1
@@ -416,13 +419,13 @@ function deplacementJoueur(){
             else if( objJoueur.tuileActive.type == 'F' && 
                      tuileEnBas.type == 'V'
             ){
-                let tuileDroitBas = tuileEntourage.find(
+                let tuileDroitBas = objJoueur.tuileEntourage.find(
                     (tuile) => 
                         tuile.tuileX == objJoueur.tuileActive.tuileX + 1 &&
                         tuile.tuileY == objJoueur.tuileActive.tuileY + 1
                 )
 
-                let tuileGauchBas = tuileEntourage.find(
+                let tuileGauchBas = objJoueur.tuileEntourage.find(
                     (tuile) => 
                         tuile.tuileX == objJoueur.tuileActive.tuileX - 1 &&
                         tuile.tuileY == objJoueur.tuileActive.tuileY + 1
@@ -483,30 +486,62 @@ function graviteJoueur(){
         binDescend = false;
     }
 
-    let tuileBas = {}
+    // let tuileBas = {}
 
 
-    objCarteTuile.tabTuile.forEach((tuile) => {
-        if(binDescend && tuile.type != 'V'){
-            if( (positionYFinale >= (tuile.tuileY)*objCarteTuile.yLargeurTuile 
-                && positionYFinale <= (tuile.tuileY + 1)*objCarteTuile.yLargeurTuile)
-                && (positionXFinale + objJoueur.largeur/2 >= (tuile.tuileX)*objCarteTuile.xLargeurTuile
-                && positionXFinale - objJoueur.largeur/2  <= (tuile.tuileX + 1)*objCarteTuile.xLargeurTuile)
-            ){
-                binDescend = false;
-                tuileBas = tuile;
-            }
-        }
-    })
-    
+    // objCarteTuile.tabTuile.forEach((tuile) => {
+    //     if(binDescend && tuile.type != 'V'){
+    //         if( (positionYFinale >= (tuile.tuileY)*objCarteTuile.yLargeurTuile 
+    //             && positionYFinale <= (tuile.tuileY + 1)*objCarteTuile.yLargeurTuile)
+    //             && (positionXFinale + objJoueur.largeur/2 >= (tuile.tuileX)*objCarteTuile.xLargeurTuile
+    //             && positionXFinale - objJoueur.largeur/2  <= (tuile.tuileX + 1)*objCarteTuile.xLargeurTuile)
+    //         ){
+    //             if(tuile.type != 'F'){
+    //                 binDescend = false;
+    //                 tuileBas = tuile;
+    //             }
+
+    //         }
+    //     }
+    // })
+
+    let tuileBas = objJoueur.tuileEntourage.find(
+        (tuile) => 
+            tuile.tuileX == objJoueur.tuileActive.tuileX  &&
+            tuile.tuileY == objJoueur.tuileActive.tuileY + 1
+    )
+
+    let tuileGauchBas = objJoueur.tuileEntourage.find(
+        (tuile) => 
+            tuile.tuileX == objJoueur.tuileActive.tuileX - 1 &&
+            tuile.tuileY == objJoueur.tuileActive.tuileY + 1
+    )
+
+    let tuileDroitBas = objJoueur.tuileEntourage.find(
+        (tuile) => 
+            tuile.tuileX == objJoueur.tuileActive.tuileX + 1 &&
+            tuile.tuileY == objJoueur.tuileActive.tuileY + 1
+    )
+
+
+
+
+    if( ((tuileBas.type != 'V' || tuileBas.type != 'F') &&
+        (tuileBas.tuileY * objCarteTuile.yLargeurTuile < objJoueur.positionY + objJoueur.hauteur/2)) &&
+        (tuileGauchBas.type != 'V'  ||
+        tuileDroitBas.type != 'V') 
+    ){
+        binDescend = false;
+    }
+
+    if(objJoueur.tuileActive.type == 'F'){
+        binDescend = false;
+    }
+
 
     objJoueur.binTomber = binDescend;
-
-    if(objJoueur.tuileActive.type == 'F' && !objJoueur.binTomber){
-        objJoueur.positionY = 
-        (objJoueur.tuileActive.tuileY + 1) * objCarteTuile.yLargeurTuile - objJoueur.hauteur/2 - 2
-    }
-    else if(binDescend){
+    
+    if(binDescend){
         objJoueur.positionY += objJoueur.vitesseY;
     }
     
@@ -678,7 +713,7 @@ function dessinerUnTuile(strType){
         objC2D.fill();        
 
         // Ajouter les petits barres
-        for(let i = 5; i < objCarteTuile.yLargeurTuile; i += 7){
+        for(let i = 5; i < objCarteTuile.yLargeurTuile; i += 10){
             objC2D.beginPath();
             objC2D.moveTo(0,i);
             objC2D.lineTo(objCarteTuile.xLargeurTuile,i);
