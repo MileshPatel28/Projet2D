@@ -111,6 +111,12 @@ function initMurs(){
 // Initialize un carte de tuile V, Il faut encore le peupler avec divers type
 // De plus, le carte de tuile peut seulement dessiner des tuiles V il faut encore mettre en place 
 // le code pour les tuiles non V
+
+// V = Vide
+// B = Béton
+// P = Paserelle
+// E = Echelle
+
 function initCarteTuile(){
     objCarteTuile = new Object();
     
@@ -129,35 +135,64 @@ function initCarteTuile(){
 
             let tuileInsere = {tuileX: x, tuileY: y, type: 'V'}
 
+
+            // Plancher de béton
             if(y >= objCarteTuile.yFinCarte/objCarteTuile.yLargeurTuile - 3){
                 tuileInsere.type = 'B'
             }
 
+            // Plancher de paserelle
             if(y == objCarteTuile.yFinCarte/objCarteTuile.yLargeurTuile - 4
                 && x >= 1
             ){
                 tuileInsere.type = 'P'
             }
 
-            if(y == objCarteTuile.yFinCarte/objCarteTuile.yLargeurTuile - 6
-                && x >= 6 && x <= 12
+            
+            // Niveau 1 Paserelle
+            if(y == 14 && ((x >= 6 && x <= 12) || (x >= 21 && x <= 27))
             ){
                 tuileInsere.type = 'P'
             }
 
-            if((y == 13 || y == 12) && x == 13){
+            // Niveau 2 Paserelle
+            if(y == 11 && (x <= 20)){
+                tuileInsere.type = 'P'
+            }
+
+            // Niveau 3 Paserelle
+            if(y == 8 && ((x <= 8) || (x >= 12))){
+                tuileInsere.type = 'P'
+            }
+
+            // Block de paserelle à niveau 3
+            if(x >= 12 && x <= 13 && y >= 5 && y <= 8){
+                tuileInsere.type = 'P'
+            }
+
+            // Niveau 4 Paserelle
+            if(y == 5 && (x >= 18)){
+                tuileInsere.type = 'P'
+            }
+
+            // Niveau 5 Paserelle
+            if(y == 3 && x <= 15){
+                tuileInsere.type = 'P'
+            }
+
+            // Tous les Échelle
+            if( ((y >= 14 && y <= 15) && (x == 5)) ||
+                ((y >= 14 && y <= 15) && (x == 28)) ||
+                ((y >= 11 && y <= 13) && (x == 10)) ||
+                ((y >= 8 && y <= 10) && (x == 3)) || 
+                ((y >= 8 && y <= 13) && (x == 21)) || 
+                ((y >= 5 && y <= 7) && (x == 14)) || 
+                ((y >= 5 && y <= 7) && (x == 26)) || 
+                ((y >= 3 && y <= 7) && (x == 8))
+            ){
                 tuileInsere.type = 'E'
             }
-
-            if(y == 13 && x == 16){
-                tuileInsere.type = 'P'
-            }
-
-            if(y == 13 && x == 10){
-                tuileInsere.type = 'P'
-            }
-
-
+            
 
             objCarteTuile.tabTuile.push(tuileInsere)
         }
