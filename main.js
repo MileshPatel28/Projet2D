@@ -212,6 +212,10 @@ function initCarteTuile(){
                 tuileInsere.type = 'P'
             }
 
+            if(y == 4 && x == 28){
+                tuileInsere.type = 'L'
+            }
+
             objCarteTuile.tabTuile.push(tuileInsere)
         }
     }
@@ -575,8 +579,10 @@ function dessiner() {
     // Déplacer les gardes avant de les dessiner
     deplacerGardes();
 
-    // Détecter si le joueur est en mouvement
-    mettreAjourAnimation();
+    dessinerJoueur();
+
+    // // Détecter si le joueur est en mouvement
+    // mettreAjourAnimation();
 
     // Dessin animation des joueurs
     let frame = Math.floor(performance.now() / 100 % 4);
@@ -594,15 +600,17 @@ function dessiner() {
     // Dessiner les gardes après mise à jour
     dessinerGardes();
 
-    // Dessiner les lingots d'or
-    dessinerLingots(100, 150);
-    dessinerLingots(200, 250);
-    dessinerLingots(300, 350);
+    // Dessiner les lingots d'or Note: Ne correspond pas au norme du système
+    // dessinerLingots(100, 150);
+    // dessinerLingots(200, 250);
+    // dessinerLingots(300, 350);
 
     objC2D.restore();
 }
 
-// Incomplet
+
+
+// +- complèt
 function dessinerTuiles() {
     objC2D.save();
 
@@ -651,7 +659,25 @@ function dessinerUnTuile(strType) {
     objC2D.fill();
 
     if (strType == 'B') {
-        objC2D.fillStyle = 'rgb(92, 92, 92)';
+        dessinerBeton();
+    }
+    else if (strType == 'P') {
+        dessinerPaserelle();
+    }
+    else if (strType == 'E') {
+        dessinerEchelle();
+    }
+    else if(strType == 'F'){
+        dessinerBarreDeFranchissement();
+    }
+    else if(strType == 'L'){
+        dessinerLingots()
+    }
+
+}
+
+function dessinerBeton(){
+    objC2D.fillStyle = 'rgb(92, 92, 92)';
 
         objC2D.beginPath();
         objC2D.rect(
@@ -674,9 +700,10 @@ function dessinerUnTuile(strType) {
             objCarteTuile.yLargeurTuile - padTuile * 2
         )
         objC2D.fill();
-    }
-    else if (strType == 'P') {
+}
 
+function dessinerPaserelle(){
+    
         // Base du paserelle
         objC2D.fillStyle = 'rgb(72, 72, 72)'
         objC2D.beginPath();
@@ -720,9 +747,10 @@ function dessinerUnTuile(strType) {
             objCarteTuile.yLargeurTuile / 2 - padBrique * 2
         )
         objC2D.fill();
-    }
-    else if (strType == 'E') {
-        let largeurBarrePrincipale = 5;
+}
+
+function dessinerEchelle(){
+    let largeurBarrePrincipale = 5;
 
         objC2D.fillStyle = 'rgb(191, 147, 51)'
         objC2D.strokeStyle = 'rgb(191, 147, 51)'
@@ -755,23 +783,64 @@ function dessinerUnTuile(strType) {
             objC2D.stroke();
         }
 
-
-    }
-    else if(strType == 'F'){
-        // Barre de franchissement
-                // Base du paserelle
-                objC2D.fillStyle = 'rgb(135, 58, 32)'
-                objC2D.beginPath();
-                objC2D.rect(
-                    0,
-                    3,
-                    objCarteTuile.xLargeurTuile,
-                    5
-                )
-                objC2D.fill();
-    }
-
 }
+
+function dessinerBarreDeFranchissement(){
+    // Barre de franchissement
+    // Base du paserelle
+    objC2D.fillStyle = 'rgb(135, 58, 32)'
+    objC2D.beginPath();
+    objC2D.rect(
+        0,
+        3,
+        objCarteTuile.xLargeurTuile,
+        5
+    )
+    objC2D.fill();
+}
+
+
+// J'ai changé les paramètre pour rendre le code plus lisibles en haut et de rendre plus compatible
+function dessinerLingots() {
+    objC2D.save();
+
+    let x = 0;
+    let y = 40;
+
+    // Couleur dorée
+    objC2D.fillStyle = "#FFD700";
+    
+    // Amas de lingots avec plusieurs petites briques
+    let largeur = 10; // Largeur d'un petit lingot
+    let hauteur = 8;  // Hauteur d'un petit lingot
+    let lignes = 3;    // Nombre de lignes de lingots
+    let colonnes = 4;  // Nombre de colonnes de lingots
+
+    for (let i = 0; i < lignes; i++) {
+        for (let j = 0; j < colonnes - i; j++) { // Réduction du nombre de lingots sur chaque ligne pour un effet pyramidal
+            let offsetX = x + j * largeur + (i * largeur / 2);
+            let offsetY = y - i * hauteur;
+
+            // Base du lingot
+            objC2D.fillStyle = "#FFD700";
+            objC2D.fillRect(offsetX, offsetY, largeur, hauteur);
+
+            // Ombre pour effet 3D
+            objC2D.fillStyle = "#DAA520";
+            objC2D.fillRect(offsetX + largeur / 3, offsetY + hauteur / 3, largeur / 1.5, hauteur / 1.5);
+        }
+    }
+
+    // Effet de brillance sur le haut des lingots
+    objC2D.fillStyle = "#FFFACD";
+    objC2D.beginPath();
+    objC2D.arc(x + 20, y - 5, 4, 0, Math.PI * 2);
+    objC2D.fill();
+
+
+    objC2D.restore();
+}
+
 
 
 function dessinerMurs() {
@@ -792,6 +861,18 @@ function dessinerMurs() {
 
     objC2D.restore();
 }
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 // Changements à déplacer
@@ -992,7 +1073,7 @@ function animer() {
     dessiner();
 }
 
-/*function dessinerJoueur(frame) {
+function dessinerJoueur() {
     objC2D.save();
 
     objC2D.translate(
@@ -1017,44 +1098,8 @@ function animer() {
     objC2D.fill();
 
     objC2D.restore();
-}*/
-
-
-
-function dessinerLingots(x, y) {
-    objC2D.save();
-
-    // Couleur dorée
-    objC2D.fillStyle = "#FFD700";
-
-    // Amas de lingots avec plusieurs petites briques
-    let largeur = 10; // Largeur d'un petit lingot
-    let hauteur = 8;  // Hauteur d'un petit lingot
-    let lignes = 3;    // Nombre de lignes de lingots
-    let colonnes = 4;  // Nombre de colonnes de lingots
-
-    for (let i = 0; i < lignes; i++) {
-        for (let j = 0; j < colonnes - i; j++) { // Réduction du nombre de lingots sur chaque ligne pour un effet pyramidal
-            let offsetX = x + j * largeur + (i * largeur / 2);
-            let offsetY = y - i * hauteur;
-
-            // Base du lingot
-            objC2D.fillStyle = "#FFD700";
-            objC2D.fillRect(offsetX, offsetY, largeur, hauteur);
-
-            // Ombre pour effet 3D
-            objC2D.fillStyle = "#DAA520";
-            objC2D.fillRect(offsetX + largeur / 3, offsetY + hauteur / 3, largeur / 1.5, hauteur / 1.5);
-        }
-    }
-
-    // Effet de brillance sur le haut des lingots
-    objC2D.fillStyle = "#FFFACD";
-    objC2D.beginPath();
-    objC2D.arc(x + 20, y - 5, 4, 0, Math.PI * 2);
-    objC2D.fill();
-
-
-    objC2D.restore();
 }
+
+
+
 
