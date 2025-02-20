@@ -282,6 +282,7 @@ function effacerDessin() {
 
 function mettreAjourAnimation() {
 
+    deplacerGardes();
     miseAJourJoueur();
 }
 
@@ -333,8 +334,6 @@ function miseAJourJoueur(){
 
     graviteJoueur()
     deplacementJoueur()
-    deplacerGardes();
-    console.log(objJoueur.binTomber)
 }
 
 
@@ -579,27 +578,26 @@ function dessiner() {
     dessinerTuiles();
     dessinerMurs();
 
-    // Déplacer les gardes avant de les dessiner
-    deplacerGardes();
-
     dessinerJoueurDebug();
+    dessinerJoueur(objJoueur.compteurFrame,'white')
 
-    // // Détecter si le joueur est en mouvement
-    // mettreAjourAnimation();
+    // =============================== Jamais faire logique de jeu dans dessiner ====================================
+    // Déplacer les gardes avant de les dessiner
+    // deplacerGardes();
 
     // Dessin animation des joueurs
-    let frame = Math.floor(performance.now() / 100 % 4);
+    // let frame = Math.floor(performance.now() / 100 % 4);
 
-    let joueurs = [
-        { x: 150, y: 200, couleur: "red" },
-        { x: 250, y: 200, couleur: "green" },
-        { x: 350, y: 200, couleur: "purple" }
-    ];
+    // let joueurs = [
+    //     { x: 150, y: 200, couleur: "red" },
+    //     { x: 250, y: 200, couleur: "green" },
+    //     { x: 350, y: 200, couleur: "purple" }
+    // ];
 
-    joueurs.forEach(joueur => {
-        dessinerJoueur(frame, joueur.couleur, joueur.x, joueur.y);
-    });
-
+    // joueurs.forEach(joueur => {
+    //     dessinerJoueur(frame, joueur.couleur, joueur.x, joueur.y); -> Déplacer en haut
+    // });
+    // =============================== Jamais faire logique de jeu dans dessiner ====================================
     // Dessiner les gardes après mise à jour
     dessinerGardes();
 
@@ -803,7 +801,7 @@ function dessinerLingots() {
     objC2D.save();
 
     let x = 0;
-    let y = 40;
+    let y = 42;
 
     // Couleur dorée
     objC2D.fillStyle = "#FFD700";
@@ -861,25 +859,14 @@ function dessinerMurs() {
 }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-// Changements à déplacer
-
 function dessinerJoueur(frame, couleurCorps) {
     objC2D.save();
 
-    let x = objJoueur.positionX - objJoueur.largeur/2;
-    let y = objJoueur.positionY - objJoueur.hauteur/2;
+    let centreJoueurDessinX = 10;
+    let centreJoueurDessinY = 8;
+
+    let x = objJoueur.positionX - objJoueur.largeur/2 - centreJoueurDessinX;
+    let y = objJoueur.positionY - objJoueur.hauteur/2 - centreJoueurDessinY;
 
     // Définitiion de la couleur de la tenue du personnage
     objC2D.fillStyle = couleurCorps || "red";
@@ -887,13 +874,13 @@ function dessinerJoueur(frame, couleurCorps) {
     // Corps (inclut bras et tronc)
     objC2D.fillRect(x + 4, y + 8, 12, 16);
 
-    // Tête (avec casque jaune)
-    objC2D.fillStyle = "#FFA500"; // Jaune orangé
+    // Tête (avec casque jaune) // J'au changé à blanche pour mieux le faire ressembler à lode runner (de plus je ne comprends pas la raison de casque)
+    objC2D.fillStyle = "white"; // Jaune orangé
     objC2D.fillRect(x + 6, y, 8, 8);
 
-    // Casque cyan
-    objC2D.fillStyle = "cyan";
-    objC2D.fillRect(x + 8, y - 2, 4, 4);
+    // // Casque cyan (Pas nécessaire selon l'esthétique du lode runner)
+    // objC2D.fillStyle = "black";
+    // objC2D.fillRect(x + 8, y - 2, 4, 4);
 
     if (joueurEnMouvement) {
         let mouvement = frame % 4;
@@ -930,6 +917,19 @@ function dessinerJoueur(frame, couleurCorps) {
 
     objC2D.restore();
 }
+
+
+
+
+
+
+
+
+
+
+
+
+// Changements à déplacer (Il ne sont pas ordonné comme le code du master alors il faut modifier le code d'avantage.)
 
 
 
@@ -1063,7 +1063,7 @@ function reinitialiserGarde(garde) {
     garde.tempsDansTrou = 0;
 }
 
-// Duplication du fontion animer();
+// Duplication du fontion animer(); (Pas bon)
 // // Fonction principale d'animation
 // function animer() {
 //     objCycleAnimation = requestAnimationFrame(animer);
@@ -1096,6 +1096,13 @@ function dessinerJoueurDebug() {
     )
     
     objC2D.fill();
+
+
+    objC2D.strokeStyle   = 'pink';
+    objC2D.beginPath();
+    objC2D.moveTo(-objJoueur.largeur/2 + objJoueur.largeur/2,-objJoueur.hauteur/2);
+    objC2D.lineTo(-objJoueur.largeur/2 + objJoueur.largeur/2,objJoueur.hauteur/2);
+    objC2D.stroke();
 
     objC2D.restore();
 }
