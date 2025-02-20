@@ -793,6 +793,9 @@ function dessinerMurs() {
     objC2D.restore();
 }
 
+
+// Changements à déplacer
+
 function dessinerJoueur(frame, couleurCorps) {
     objC2D.save();
 
