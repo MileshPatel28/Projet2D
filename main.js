@@ -554,7 +554,7 @@ function graviteJoueur(){
 /**
  * -----------------
  *  Dessinage du jeu
- * ------------- ---
+ * -----------------
  */
 
 function dessiner(){
