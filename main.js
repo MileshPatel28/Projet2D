@@ -16,6 +16,7 @@ var objMurs = null;
 var objCarteTuile = null;
 
 var objJoueur = null;
+var objStatJeu = null;
 
 var lingotsRamasses = 0;
 
@@ -65,6 +66,10 @@ function initControlleurJeu() {
 
     objControlleurJeu.cleX = false;
     objControlleurJeu.cleZ = false;
+
+}
+
+function initStatistiqueJeu(){
 
 }
 
@@ -574,7 +579,9 @@ function dessiner() {
 
     // Dessiner l'environnement 
     dessinerTuiles();
-    dessinerMurs();
+    
+
+    dessinerPointage();
 
     dessinerJoueurDebug();
     dessinerJoueur(objJoueur.compteurFrame,'white')
@@ -598,6 +605,8 @@ function dessiner() {
     // =============================== Jamais faire logique de jeu dans dessiner ====================================
     // Dessiner les gardes après mise à jour
     dessinerGardes();
+
+    dessinerMurs();
 
     objC2D.restore();
 }
@@ -631,6 +640,8 @@ function dessinerTuiles() {
 }
 
 function dessinerUnTuile(strType) {
+    objC2D.save();
+
     objC2D.fillStyle = `rgb(${Math.random() * 255}, 
     ${Math.random() * 255}, 
     ${Math.random() * 255})`;
@@ -668,6 +679,7 @@ function dessinerUnTuile(strType) {
         dessinerLingots()
     }
 
+    objC2D.restore();
 }
 
 function dessinerBeton(){
@@ -840,6 +852,8 @@ function dessinerLingots() {
 function dessinerMurs() {
     objC2D.save();
 
+
+    objC2D.save();
     objC2D.fillStyle = objMurs.strCouleur;
 
     objMurs.tabMurs.forEach((mur) => {
@@ -852,6 +866,18 @@ function dessinerMurs() {
         )
         objC2D.fill();
     })
+    objC2D.restore();
+
+
+    objC2D.save();
+    objC2D.fillStyle = 'cyan'
+    objC2D.font = "30px arial";
+    objC2D.fillText(
+        'test',
+        500,
+        objCanvas.height/2
+    )
+    objC2D.restore();
 
     objC2D.restore();
 }
@@ -876,9 +902,9 @@ function dessinerJoueur(frame, couleurCorps) {
     objC2D.fillStyle = "white"; // Jaune orangé
     objC2D.fillRect(x + 6, y, 8, 8);
 
-    // // Casque cyan (Pas nécessaire selon l'esthétique du lode runner)
-    // objC2D.fillStyle = "black";
-    // objC2D.fillRect(x + 8, y - 2, 4, 4);
+    // Casque cyan 
+    objC2D.fillStyle = "cyan";
+    objC2D.fillRect(x + 8, y - 2, 4, 4);
 
     if (joueurEnMouvement) {
         let mouvement = frame % 4;
@@ -916,6 +942,27 @@ function dessinerJoueur(frame, couleurCorps) {
     objC2D.restore();
 }
 
+
+function dessinerPointage(){
+    objC2D.save();
+
+    objC2D.translate(
+        -objCarteTuile.xAlignementCarte,
+        -objCarteTuile.yAlignementCarte
+    )
+
+
+    objC2D.fillStyle = 'black'
+    objC2D.fillRect(
+        0,
+        17*objCarteTuile.yLargeurTuile,
+        28*objCarteTuile.xLargeurTuile,
+        objCarteTuile.yLargeurTuile*2
+    )
+
+
+    objC2D.restore();
+}
 
 
 
