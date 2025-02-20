@@ -227,6 +227,8 @@ function initCarteTuile(){
 function initJoueur() {
     objJoueur = new Object();
 
+    objJoueur.compteurFrame = 0;
+
     objJoueur.largeur = 50;
     objJoueur.hauteur = 50;
 
@@ -332,6 +334,7 @@ function miseAJourJoueur(){
     graviteJoueur()
     deplacementJoueur()
     deplacerGardes();
+    console.log(objJoueur.binTomber)
 }
 
 
@@ -579,7 +582,7 @@ function dessiner() {
     // Déplacer les gardes avant de les dessiner
     deplacerGardes();
 
-    dessinerJoueur();
+    dessinerJoueurDebug();
 
     // // Détecter si le joueur est en mouvement
     // mettreAjourAnimation();
@@ -599,11 +602,6 @@ function dessiner() {
 
     // Dessiner les gardes après mise à jour
     dessinerGardes();
-
-    // Dessiner les lingots d'or Note: Ne correspond pas au norme du système
-    // dessinerLingots(100, 150);
-    // dessinerLingots(200, 250);
-    // dessinerLingots(300, 350);
 
     objC2D.restore();
 }
@@ -880,8 +878,8 @@ function dessinerMurs() {
 function dessinerJoueur(frame, couleurCorps) {
     objC2D.save();
 
-    let x = objJoueur.positionX;
-    let y = objJoueur.positionY;
+    let x = objJoueur.positionX - objJoueur.largeur/2;
+    let y = objJoueur.positionY - objJoueur.hauteur/2;
 
     // Définitiion de la couleur de la tenue du personnage
     objC2D.fillStyle = couleurCorps || "red";
@@ -1065,15 +1063,17 @@ function reinitialiserGarde(garde) {
     garde.tempsDansTrou = 0;
 }
 
-// Fonction principale d'animation
-function animer() {
-    objCycleAnimation = requestAnimationFrame(animer);
-    effacerDessin();
-    deplacerGardes();
-    dessiner();
-}
+// Duplication du fontion animer();
+// // Fonction principale d'animation
+// function animer() {
+//     objCycleAnimation = requestAnimationFrame(animer);
+//     effacerDessin();
+//     deplacerGardes();
+//     dessiner();
+// }
 
-function dessinerJoueur() {
+// Fonction dessiner DEBUG (garde pas commenté pour debug)
+function dessinerJoueurDebug() {
     objC2D.save();
 
     objC2D.translate(
