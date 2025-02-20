@@ -1,11 +1,8 @@
-// Branch Milesh
+// Branch Pre-Master
 //
 /**
  *  NOTE POUR PROJET
  *  Sur github, les contributions n'est pas representative de qui fait quoi. 
- *  On utilise un extension dont on peut modifier le même fichier en même temps.
- *  À la fin de chaque jour/session, je publie les modifications qui est fait sur mon PC.
- *  De cette façon, le projet se réalisera plus rapidement qu'avant.
  * 
  */
 
@@ -123,6 +120,7 @@ function initMurs() {
 // P = Paserelle
 // E = Echelle
 // F = Barre de franchissement
+// L = Lingot d'or
 
 function initCarteTuile(){
     objCarteTuile = new Object();
