@@ -46,7 +46,7 @@ function initJeu() {
     objC2D = objCanvas.getContext('2d');
 
     initControlleurJeu();
-
+    initStatistiqueJeu();
     initMurs();
     initCarteTuile();
 
@@ -70,7 +70,16 @@ function initControlleurJeu() {
 }
 
 function initStatistiqueJeu(){
+    objStatJeu = new Object();
 
+    objStatJeu.temps = 0;
+
+    objStatJeu.secondsEcoule = 0;
+    objStatJeu.minuteEcoule = 0;
+
+    objStatJeu.intVie = 10;
+    objStatJeu.intNiveau = 1;
+    objStatJeu.score = 0;
 }
 
 function initMurs() {
@@ -285,6 +294,8 @@ function effacerDessin() {
 
 function mettreAjourAnimation() {
 
+    miseAJourStatistique();
+
     deplacerGardes();
     miseAJourJoueur();
 }
@@ -308,6 +319,30 @@ document.addEventListener('keyup', (event) => {
     if (event.key == 'Z') objControlleurJeu.cleZ = false;
 })
 
+function miseAJourStatistique(){
+    objStatJeu.temps += 1/60;
+
+    if(objStatJeu.temps >= 1){
+        objStatJeu.secondsEcoule += 1;
+        objStatJeu.temps = 0;
+        
+    }
+
+    if(objStatJeu.secondsEcoule >= 60){
+        objStatJeu.minuteEcoule += 1;
+        objStatJeu.secondsEcoule = 0;
+    }
+
+    // Pour éviter le débordage du affichage
+    if(objStatJeu.minuteEcoule >= 99){
+        objStatJeu.minuteEcoule = 0;
+    }
+
+    if(objJoueur.tuileActive && objJoueur.tuileActive.type == 'L'){
+        objJoueur.tuileActive.type = 'V';
+        objStatJeu.score += 250;
+    }
+}
 
 // Joueur Logique
 
@@ -359,8 +394,9 @@ function deplacementJoueur() {
                 tuile.tuileY == objJoueur.tuileActive.tuileY
         )
 
+        
         if(objControlleurJeu.cleGauche &&
-           objJoueur.positionX > 25 + objJoueur.largeur/2){
+           objJoueur.positionX > objJoueur.largeur + 25){
 
             
 
@@ -384,7 +420,7 @@ function deplacementJoueur() {
         )
 
         if(objControlleurJeu.cleDroit &&
-            objJoueur.positionX < 25 + objCanvas.width - 25){
+            objJoueur.positionX < objCanvas.width - objJoueur.largeur/2){
  
              
  
@@ -963,6 +999,56 @@ function dessinerPointage(){
         objCarteTuile.yLargeurTuile*2
     )
 
+
+    // Les points
+    let strPointage = 'Score: ' + String(objStatJeu.score).padStart(7,'0');
+
+    objC2D.fillStyle = 'yellow'
+    objC2D.font = "48px impact"
+    objC2D.textAlign = "center"
+    objC2D.fillText(
+        strPointage,
+        largeurTableauStat * 1/8,
+        17*objCarteTuile.yLargeurTuile + objCarteTuile.yLargeurTuile
+    );
+
+    // Temps écoulé
+    let strTemps = 'Temps: '
+    strTemps += (objStatJeu.minuteEcoule <= 9) ? '0' + objStatJeu.minuteEcoule : objStatJeu.minuteEcoule
+    strTemps += ':'
+    strTemps += (objStatJeu.secondsEcoule <= 9) ? '0' + objStatJeu.secondsEcoule : objStatJeu.secondsEcoule
+
+    objC2D.fillStyle = 'yellow'
+    objC2D.font = "48px impact"
+    objC2D.textAlign = "center"
+    objC2D.fillText(
+        strTemps,
+        largeurTableauStat * 3/8,
+        17*objCarteTuile.yLargeurTuile + objCarteTuile.yLargeurTuile
+    );
+
+    // Niveau
+    let strNiveau = 'Niveau: ' + ((objStatJeu.intNiveau <= 9) ? '0' + objStatJeu.intNiveau : objStatJeu.intNiveau);
+    objC2D.fillStyle = 'yellow'
+    objC2D.font = "48px impact"
+    objC2D.textAlign = "center"
+    objC2D.fillText(
+        strNiveau,
+        largeurTableauStat * 5/8,
+        17*objCarteTuile.yLargeurTuile + objCarteTuile.yLargeurTuile
+    );
+
+
+    // Vies
+    let strVies = 'Vie: ' + objStatJeu.intVie
+    objC2D.fillStyle = 'yellow'
+    objC2D.font = "48px impact"
+    objC2D.textAlign = "center"
+    objC2D.fillText(
+        strVies,
+        largeurTableauStat * 7/8,
+        17*objCarteTuile.yLargeurTuile + objCarteTuile.yLargeurTuile
+    );
 
     objC2D.restore();
 }
