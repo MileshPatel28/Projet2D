@@ -868,14 +868,15 @@ function dessinerMurs() {
     })
     objC2D.restore();
 
-
+    
     objC2D.save();
-    objC2D.fillStyle = 'cyan'
+    objC2D.fillStyle = 'black'
     objC2D.font = "30px arial";
+    objC2D.textAlign = "center"
     objC2D.fillText(
-        'test',
-        500,
-        objCanvas.height/2
+        'Par Milesh Patel et Abel Aimé Moussy Minyogok',
+        objCanvas.width/2,
+        objCanvas.height - 2
     )
     objC2D.restore();
 
@@ -950,6 +951,8 @@ function dessinerPointage(){
         -objCarteTuile.xAlignementCarte,
         -objCarteTuile.yAlignementCarte
     )
+
+    let largeurTableauStat = 28*objCarteTuile.xLargeurTuile
 
 
     objC2D.fillStyle = 'black'
