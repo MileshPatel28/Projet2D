@@ -201,6 +201,11 @@ function initCarteTuile(){
                 tuileInsere.type = 'F'
             }
 
+            // Debug
+            if(y == 3 && x == 23){
+                tuileInsere.type = 'P'
+            }
+
             objCarteTuile.tabTuile.push(tuileInsere)
         }
     }
@@ -215,8 +220,8 @@ function initJoueur(){
     objJoueur.largeur = 50;
     objJoueur.hauteur = 50;
 
-    objJoueur.positionX = objCanvas.width/1.25 + 25; // Changer a objCanvas.width/2
-    objJoueur.positionY = 125; //625
+    objJoueur.positionX = objCanvas.width/1.26 + 25; // Changer a objCanvas.width/2
+    objJoueur.positionY = 75; //625
 
     objJoueur.vitesseY = 3;
     objJoueur.vitesseX = 4;
@@ -227,6 +232,8 @@ function initJoueur(){
     objJoueur.tuileEntourage = []
 
     objJoueur.binGrimpeEchelle = false;
+
+    objJoueur.binRelache = false;
 }
 
 /**
@@ -438,7 +445,8 @@ function deplacementJoueur(){
                     || (tuileDroitBas.tuileX) * objCarteTuile.xLargeurTuile - objJoueur.largeur/2 > objJoueur.positionX)
                 ){
                     objJoueur.positionY += 6;
-                    objJoueur.tuileActive = {}
+                    objJoueur.binRelache = true;
+                    // objJoueur.tuileActive = {}
                 }
 
                 
@@ -479,31 +487,10 @@ function graviteJoueur(){
     
     let binDescend = true;
 
-    let positionYFinale = objJoueur.positionY + objJoueur.vitesseY + objJoueur.hauteur / 2;
-    let positionXFinale = objJoueur.positionX;
-
     if(!(objJoueur.positionY < objMurs.tabMurs[2].yDebut)){
         binDescend = false;
     }
 
-    // let tuileBas = {}
-
-
-    // objCarteTuile.tabTuile.forEach((tuile) => {
-    //     if(binDescend && tuile.type != 'V'){
-    //         if( (positionYFinale >= (tuile.tuileY)*objCarteTuile.yLargeurTuile 
-    //             && positionYFinale <= (tuile.tuileY + 1)*objCarteTuile.yLargeurTuile)
-    //             && (positionXFinale + objJoueur.largeur/2 >= (tuile.tuileX)*objCarteTuile.xLargeurTuile
-    //             && positionXFinale - objJoueur.largeur/2  <= (tuile.tuileX + 1)*objCarteTuile.xLargeurTuile)
-    //         ){
-    //             if(tuile.type != 'F'){
-    //                 binDescend = false;
-    //                 tuileBas = tuile;
-    //             }
-
-    //         }
-    //     }
-    // })
 
     let tuileBas = objJoueur.tuileEntourage.find(
         (tuile) => 
@@ -524,17 +511,29 @@ function graviteJoueur(){
     )
 
 
-
-
-    if( ((tuileBas.type != 'V' || tuileBas.type != 'F') &&
-        (tuileBas.tuileY * objCarteTuile.yLargeurTuile < objJoueur.positionY + objJoueur.hauteur/2)) &&
-        (tuileGauchBas.type != 'V'  ||
-        tuileDroitBas.type != 'V') 
-    ){
-        binDescend = false;
+    if(tuileBas.type != 'V' && tuileBas.type != 'F'){
+        if(tuileBas.tuileY * objCarteTuile.yLargeurTuile < objJoueur.positionY + objJoueur.hauteur/2){
+            binDescend = false;
+        }
+    }
+    else if(tuileBas.type == 'V'){
+        if( tuileGauchBas.type != 'V' && 
+            (tuileGauchBas.tuileX + 1 ) * objCarteTuile.xLargeurTuile > objJoueur.positionX - objJoueur.largeur/2
+        ){
+                binDescend = false;
+        }
+        else if( tuileDroitBas.type != 'V' &&
+                 (tuileDroitBas.tuileX) * objCarteTuile.xLargeurTuile < objJoueur.positionX + objJoueur.largeur/2
+        ){
+            binDescend = false;
+        }
     }
 
     if(objJoueur.tuileActive.type == 'F'){
+        binDescend = false;
+    }
+
+    if(objJoueur.binGrimpeEchelle){
         binDescend = false;
     }
 
@@ -543,6 +542,10 @@ function graviteJoueur(){
     
     if(binDescend){
         objJoueur.positionY += objJoueur.vitesseY;
+        objJoueur.binRelache = true;
+    }
+    else if(objJoueur.tuileActive.type == 'F' && !objJoueur.binRelache){
+        objJoueur.positionY = objJoueur.tuileActive.tuileY*objCarteTuile.yLargeurTuile + objJoueur.hauteur/2 - objJoueur.vitesseY
     }
     
 }
