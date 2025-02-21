@@ -66,8 +66,6 @@ function initControlleurJeu() {
     objControlleurJeu.cleGauche = false;
     objControlleurJeu.cleDroit = false;
 
-    objControlleurJeu.cleX = false;
-    objControlleurJeu.cleZ = false;
 
 }
 
@@ -276,23 +274,27 @@ function genererCarteTuile(){
         if(niveauY > 2){
             tabNiveauY.push(niveauY);
         }
-        
+
         niveauY -= randInt(2,3)
     }
 
 
     let decoupageNiveaus = []
 
+
     for(let i = 1; i <= 5; i++){
         console.log('niveau ' + i)
         let tabDecoupageNiveau = []
 
+        let minDecoupageGlobale = 3
+        let debutDecoupage = randInt(minDecoupageGlobale,15);
+
         let nombreDecoupage = randInt(0,2) * 2
-        let xDecoupage = randInt(4,7)
+        let xDecoupage = randInt(minDecoupageGlobale,6)
 
         for(let j = nombreDecoupage; j > 0; j--){
             tabDecoupageNiveau.push(xDecoupage)
-            xDecoupage += (nombreDecoupage == 4) ? randInt(4,7) : randInt(4,11)
+            xDecoupage += (nombreDecoupage == 4) ? randInt(minDecoupageGlobale,7) : randInt(minDecoupageGlobale,11)
         }
 
         decoupageNiveaus.push(tabDecoupageNiveau)
@@ -386,8 +388,25 @@ document.addEventListener('keydown', (event) => {
     if (event.key == 'ArrowLeft') objControlleurJeu.cleGauche = true;
     if (event.key == 'ArrowRight') objControlleurJeu.cleDroit = true;
     if (event.key == 'ArrowDown') objControlleurJeu.cleBas = true;
-    if (event.key == 'X') objControlleurJeu.cleX = true;
-    if (event.key == 'Z') objControlleurJeu.cleZ = true;
+    if (event.key == 'x') {
+        let tuileGauchBas = objJoueur.tuileEntourage.find(
+            (tuile) => 
+                tuile.tuileX == objJoueur.tuileActive.tuileX - 1 &&
+                tuile.tuileY == objJoueur.tuileActive.tuileY + 1
+        )
+
+        tuileGauchBas.type = 'V_P'
+    }
+    if (event.key == 'z') {
+        let tuileDroitBas = objJoueur.tuileEntourage.find(
+            (tuile) => 
+                tuile.tuileX == objJoueur.tuileActive.tuileX + 1 &&
+                tuile.tuileY == objJoueur.tuileActive.tuileY + 1
+        )
+
+        tuileDroitBas.type = 'V_P'
+    }
+
 })
 
 document.addEventListener('keyup', (event) => {
@@ -395,8 +414,6 @@ document.addEventListener('keyup', (event) => {
     if (event.key == 'ArrowLeft') objControlleurJeu.cleGauche = false;
     if (event.key == 'ArrowRight') objControlleurJeu.cleDroit = false;
     if (event.key == 'ArrowDown') objControlleurJeu.cleBas = false;
-    if (event.key == 'X') objControlleurJeu.cleX = false;
-    if (event.key == 'Z') objControlleurJeu.cleZ = false;
 })
 
 function miseAJourStatistique(){
