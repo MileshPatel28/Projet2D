@@ -279,11 +279,11 @@ function genererCarteTuile(){
     }
 
 
+
     let decoupageNiveaus = []
 
 
     for(let i = 1; i <= 5; i++){
-        console.log('niveau ' + i)
         let tabDecoupageNiveau = []
 
         let minDecoupageGlobale = 3
@@ -298,7 +298,6 @@ function genererCarteTuile(){
         }
 
         decoupageNiveaus.push(tabDecoupageNiveau)
-        console.log(tabDecoupageNiveau)
     }
 
 
@@ -306,6 +305,8 @@ function genererCarteTuile(){
     objCarteTuile.tabTuile.forEach((tuile) =>{
         tuile.type = 'V'
     })
+
+    let yDebutEchelle = 15;
 
     // Algorithm de generation
     objCarteTuile.tabTuile.forEach((tuile) => {
@@ -323,16 +324,28 @@ function genererCarteTuile(){
             tuile.type = 'P'
         }
 
+
+        // Generations des niveaus
         for(let indexNiveau = 0; indexNiveau < tabNiveauY.length; indexNiveau++){
+            let tabDecoupageNiveau = decoupageNiveaus[0 + indexNiveau];
+
             if(tabNiveauY[indexNiveau] == y){
                 tuile.type = 'P'
 
-                let tabDecoupageNiveau1 = decoupageNiveaus[0 + indexNiveau];
-                for(let i = 0; i < tabDecoupageNiveau1.length; i += 2){
-                    if(x >= tabDecoupageNiveau1[i] && x <= tabDecoupageNiveau1[i + 1]){
+                
+                for(let i = 0; i < tabDecoupageNiveau.length; i += 2){
+                    if(x >= tabDecoupageNiveau[i] && x <= tabDecoupageNiveau[i + 1]){
                         tuile.type = 'V'
                     }
-                }      
+                }       
+                
+            }
+            else if(y == yDebutEchelle){
+                for(let i = 0; i < tabDecoupageNiveau.length; i ++){
+                    if(x == tabDecoupageNiveau[i] && y >= tabNiveauY[indexNiveau]){
+                        tuile.type = 'E'
+                    }
+                }    
             }
         }
 
