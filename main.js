@@ -52,8 +52,6 @@ function initJeu() {
 
     initJoueur();
 
-    genererCarteTuile();
-
     dessiner();
     animer();
 }
@@ -148,6 +146,7 @@ function initCarteTuile(){
     objCarteTuile.yLargeurTuile = 50;
 
     objCarteTuile.tabTuile = []
+    objCarteTuile.tabPotentielle = [] // Un tableau pour mettre les endroits potentiels des lingots et des gardes
 
     for(let x = 1; x <= objCarteTuile.xFinCarte/objCarteTuile.xLargeurTuile;x++){
         for(let y = 1; y <= objCarteTuile.yFinCarte/objCarteTuile.yLargeurTuile; y++){
@@ -216,18 +215,41 @@ function initCarteTuile(){
                 tuileInsere.type = 'F'
             }
 
-            // Debug
-            if(y == 3 && x == 23){
-                tuileInsere.type = 'P'
-            }
 
-            if(y == 4 && x == 28){
-                tuileInsere.type = 'L'
+            if(tuileInsere.type == 'P'){
+                let tuileEnHaut = new Object();
+
+                tuileEnHaut.y = y - 1;
+                tuileEnHaut.x = x;
+
+                objCarteTuile.tabPotentielle.push(
+                    tuileEnHaut
+                )
             }
 
             objCarteTuile.tabTuile.push(tuileInsere)
         }
     }
+
+    for(let i = 1; i <= 6; i++){
+        let binBarrePlace = false;
+        
+        while(!binBarrePlace){
+            let tuileCoordonee = objCarteTuile.tabPotentielle[randInt(0,objCarteTuile.tabPotentielle.length - 1)]
+
+            objCarteTuile.tabTuile.forEach((tuile) => {
+                if( tuile.tuileX == tuileCoordonee.x &&
+                    tuile.tuileY == tuileCoordonee.y &&
+                    tuile.type == 'V'
+                ){
+                    tuile.type = 'L';
+                    binBarrePlace = true;
+                }
+            })
+        }
+
+    }
+
 
 
 }
@@ -257,102 +279,6 @@ function initJoueur() {
     objJoueur.binRelache = false;
 }
 
-
-function genererCarteTuile(){
-
-    let yPremierNiveau = randInt(13,14);
-    let yDeuxiemeNiveau = yPremierNiveau - randInt(2,3);
-    let yTroisiemeNiveau = yDeuxiemeNiveau - randInt(2,3);
-    let yQuatriemeNiveau = yTroisiemeNiveau - randInt(2,3);
-    let yCinquiemeNiveau = yQuatriemeNiveau - randInt(2,3);
-
-    let tabNiveauY = []
-
-    let niveauY = randInt(13,14);
-    for(let i = 0; i < 5; i++){
-
-        if(niveauY > 2){
-            tabNiveauY.push(niveauY);
-        }
-
-        niveauY -= randInt(2,3)
-    }
-
-
-
-    let decoupageNiveaus = []
-
-
-    for(let i = 1; i <= 5; i++){
-        let tabDecoupageNiveau = []
-
-        let minDecoupageGlobale = 3
-        let debutDecoupage = randInt(minDecoupageGlobale,15);
-
-        let nombreDecoupage = randInt(0,2) * 2
-        let xDecoupage = randInt(minDecoupageGlobale,6)
-
-        for(let j = nombreDecoupage; j > 0; j--){
-            tabDecoupageNiveau.push(xDecoupage)
-            xDecoupage += (nombreDecoupage == 4) ? randInt(minDecoupageGlobale,7) : randInt(minDecoupageGlobale,11)
-        }
-
-        decoupageNiveaus.push(tabDecoupageNiveau)
-    }
-
-
-    // Reinitializer la carte de tuile
-    objCarteTuile.tabTuile.forEach((tuile) =>{
-        tuile.type = 'V'
-    })
-
-    let yDebutEchelle = 15;
-
-    // Algorithm de generation
-    objCarteTuile.tabTuile.forEach((tuile) => {
-
-        let x = tuile.tuileX;
-        let y = tuile.tuileY;
-
-         // Plancher de béton
-        if(y >= 17){
-            tuile.type = 'B'
-        }
-
-        // Plancher de paserelle
-        if(y == 16){
-            tuile.type = 'P'
-        }
-
-
-        // Generations des niveaus
-        for(let indexNiveau = 0; indexNiveau < tabNiveauY.length; indexNiveau++){
-            let tabDecoupageNiveau = decoupageNiveaus[0 + indexNiveau];
-
-            if(tabNiveauY[indexNiveau] == y){
-                tuile.type = 'P'
-
-                
-                for(let i = 0; i < tabDecoupageNiveau.length; i += 2){
-                    if(x >= tabDecoupageNiveau[i] && x <= tabDecoupageNiveau[i + 1]){
-                        tuile.type = 'V'
-                    }
-                }       
-                
-            }
-            else if(y == yDebutEchelle){
-                for(let i = 0; i < tabDecoupageNiveau.length; i ++){
-                    if(x == tabDecoupageNiveau[i] && y >= tabNiveauY[indexNiveau]){
-                        tuile.type = 'E'
-                    }
-                }    
-            }
-        }
-
-
-
-    })
-}
 
 /**
  *  ----------------------
@@ -673,7 +599,7 @@ function graviteJoueur() {
     )
 
 
-    if(tuileBas.type != 'V' && tuileBas.type != 'F'){
+    if(tuileBas.type != 'V' && tuileBas.type != 'F' && tuileBas.type != 'L'){
         if(tuileBas.tuileY * objCarteTuile.yLargeurTuile < objJoueur.positionY + objJoueur.hauteur/2){
             binDescend = false;
         }
