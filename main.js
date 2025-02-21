@@ -216,15 +216,17 @@ function initCarteTuile(){
             }
 
 
+
             if(tuileInsere.type == 'P'){
                 let tuileEnHaut = new Object();
 
                 tuileEnHaut.y = y - 1;
                 tuileEnHaut.x = x;
 
-                objCarteTuile.tabPotentielle.push(
-                    tuileEnHaut
-                )
+                if(y != 4 && x != 18){
+                    objCarteTuile.tabPotentielle.push(tuileEnHaut)
+                }
+                
             }
 
             objCarteTuile.tabTuile.push(tuileInsere)
@@ -377,8 +379,24 @@ function miseAJourStatistique(){
     if(objJoueur.tuileActive && objJoueur.tuileActive.type == 'L'){
         objJoueur.tuileActive.type = 'V';
         objStatJeu.score += 250;
+
+        let binIngotsCollecte = true;
+
+        objCarteTuile.tabTuile.forEach((tuile) => {
+            if(tuile.type == 'L') binIngotsCollecte = false;
+        })
+
+        if(binIngotsCollecte) genererEscalier();
     }
 }
+
+function genererEscalier(){
+    objCarteTuile.tabTuile.forEach((tuile) => {
+        if(tuile.tuileX == 18 && tuile.tuileY <= 4) tuile.type = 'E';
+    })
+
+}
+
 
 // Joueur Logique
 
@@ -628,7 +646,8 @@ function graviteJoueur() {
 
     objJoueur.binTomber = binDescend;
     
-    if(binDescend){
+
+    if(binDescend && !objJoueur.binGrimpeEchelle){
         objJoueur.positionY += objJoueur.vitesseY;
         objJoueur.binRelache = true;
     }
