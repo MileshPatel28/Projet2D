@@ -52,6 +52,8 @@ function initJeu() {
 
     initJoueur();
 
+    genererCarteTuile();
+
     dessiner();
     animer();
 }
@@ -154,16 +156,13 @@ function initCarteTuile(){
 
             let tuileInsere = {tuileX: x, tuileY: y, type: 'V'}
 
-
             // Plancher de béton
-            if(y >= objCarteTuile.yFinCarte/objCarteTuile.yLargeurTuile - 3){
+            if(y >= 17){
                 tuileInsere.type = 'B'
             }
 
             // Plancher de paserelle
-            if(y == objCarteTuile.yFinCarte/objCarteTuile.yLargeurTuile - 4
-                && x >= 1
-            ){
+            if(y == 16){
                 tuileInsere.type = 'P'
             }
 
@@ -260,6 +259,86 @@ function initJoueur() {
     objJoueur.binRelache = false;
 }
 
+
+function genererCarteTuile(){
+
+    let yPremierNiveau = randInt(13,14);
+    let yDeuxiemeNiveau = yPremierNiveau - randInt(2,3);
+    let yTroisiemeNiveau = yDeuxiemeNiveau - randInt(2,3);
+    let yQuatriemeNiveau = yTroisiemeNiveau - randInt(2,3);
+    let yCinquiemeNiveau = yQuatriemeNiveau - randInt(2,3);
+
+    let tabNiveauY = []
+
+    let niveauY = randInt(13,14);
+    for(let i = 0; i < 5; i++){
+
+        if(niveauY > 2){
+            tabNiveauY.push(niveauY);
+        }
+        
+        niveauY -= randInt(2,3)
+    }
+
+
+    let decoupageNiveaus = []
+
+    for(let i = 1; i <= 5; i++){
+        console.log('niveau ' + i)
+        let tabDecoupageNiveau = []
+
+        let nombreDecoupage = randInt(0,2) * 2
+        let xDecoupage = randInt(4,7)
+
+        for(let j = nombreDecoupage; j > 0; j--){
+            tabDecoupageNiveau.push(xDecoupage)
+            xDecoupage += (nombreDecoupage == 4) ? randInt(4,7) : randInt(4,11)
+        }
+
+        decoupageNiveaus.push(tabDecoupageNiveau)
+        console.log(tabDecoupageNiveau)
+    }
+
+
+    // Reinitializer la carte de tuile
+    objCarteTuile.tabTuile.forEach((tuile) =>{
+        tuile.type = 'V'
+    })
+
+    // Algorithm de generation
+    objCarteTuile.tabTuile.forEach((tuile) => {
+
+        let x = tuile.tuileX;
+        let y = tuile.tuileY;
+
+         // Plancher de béton
+        if(y >= 17){
+            tuile.type = 'B'
+        }
+
+        // Plancher de paserelle
+        if(y == 16){
+            tuile.type = 'P'
+        }
+
+        for(let indexNiveau = 0; indexNiveau < tabNiveauY.length; indexNiveau++){
+            if(tabNiveauY[indexNiveau] == y){
+                tuile.type = 'P'
+
+                let tabDecoupageNiveau1 = decoupageNiveaus[0 + indexNiveau];
+                for(let i = 0; i < tabDecoupageNiveau1.length; i += 2){
+                    if(x >= tabDecoupageNiveau1[i] && x <= tabDecoupageNiveau1[i + 1]){
+                        tuile.type = 'V'
+                    }
+                }      
+            }
+        }
+
+
+
+    })
+}
+
 /**
  *  ----------------------
  *  Fonction Préliminaire
@@ -285,6 +364,7 @@ function arreterAnimation() {
 function effacerDessin() {
     objC2D.clearRect(0, 0, objCanvas.width, objCanvas.height);
 }
+
 
 /**
 *  -----------------
@@ -394,7 +474,7 @@ function deplacementJoueur() {
                 tuile.tuileY == objJoueur.tuileActive.tuileY
         )
 
-        
+
         if(objControlleurJeu.cleGauche &&
            objJoueur.positionX > objJoueur.largeur + 25){
 
@@ -1054,7 +1134,12 @@ function dessinerPointage(){
 }
 
 
+// ========== Fonctions arbritaires ===================
 
+// Fonction de https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math/random (légèrement modifié)
+function randInt(min, max) {
+    return Math.floor(Math.random() * (Math.floor(max) - Math.ceil(min) + 1) + Math.ceil(min)); 
+}
 
 
 
