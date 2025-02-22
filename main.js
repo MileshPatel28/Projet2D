@@ -64,6 +64,8 @@ function initControlleurJeu() {
     objControlleurJeu.cleGauche = false;
     objControlleurJeu.cleDroit = false;
 
+    objControlleurJeu.jeuPause = true;
+    objControlleurJeu.binProchaineNiveau = false;
 
 }
 
@@ -265,8 +267,8 @@ function initJoueur() {
     objJoueur.largeur = 50;
     objJoueur.hauteur = 50;
 
-    objJoueur.positionX = objCanvas.width/1.26 + 25; // Changer a objCanvas.width/2
-    objJoueur.positionY = 75; //625
+    objJoueur.positionX = objCanvas.width/2; // Changer a objCanvas.width/2
+    objJoueur.positionY = 775; //775
 
     objJoueur.vitesseY = 3;
     objJoueur.vitesseX = 4;
@@ -317,10 +319,21 @@ function effacerDessin() {
 
 function mettreAjourAnimation() {
 
-    miseAJourStatistique();
+    if(!objControlleurJeu.jeuPause){
+        miseAJourStatistique();
 
-    deplacerGardes();
-    miseAJourJoueur();
+        deplacerGardes();
+        miseAJourJoueur();
+    }
+
+    if(objJoueur.positionY < objCarteTuile.yLargeurTuile*2){
+        objControlleurJeu.jeuPause = true;
+        objControlleurJeu.binProchaineNiveau = true;
+    }
+
+    if(objControlleurJeu.binProchaineNiveau){
+        joueurProchaineNiveau();
+    }
 }
 
 // Évenement pour détecter les touches du utilisateur
@@ -346,6 +359,11 @@ document.addEventListener('keydown', (event) => {
         )
 
         tuileDroitBas.type = 'V_P'
+    }
+    
+    if(objJoueur.positionY > objCarteTuile.yLargeurTuile*2 && objControlleurJeu.jeuPause){
+        objControlleurJeu.jeuPause = false;
+        objJoueur.binGrimpeEchelle = false;
     }
 
 })
@@ -657,6 +675,19 @@ function graviteJoueur() {
     
 }
 
+function joueurProchaineNiveau(){
+    objJoueur.positionY -= 1;
+
+    if(objJoueur.positionY <= -objJoueur.hauteur){
+        objControlleurJeu.binProchaineNiveau = false;
+        objStatJeu.intNiveau++;
+
+        objJoueur.positionX = objCanvas.width/2; 
+        objJoueur.positionY = 775; 
+
+        initCarteTuile();
+    }
+}
 
 /**
  * -----------------
