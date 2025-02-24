@@ -420,6 +420,8 @@ function genererEscalier(){
 
 function miseAJourJoueur(){
 
+    objJoueur.compteurFrame++;
+
     objJoueur.tuileActive = {}
 
     objJoueur.tuileEntourage = []
@@ -706,30 +708,13 @@ function dessiner() {
     dessinerPointage();
 
     dessinerJoueurDebug();
-    dessinerJoueur(objJoueur.compteurFrame,'white')
+    console.log(Math.floor(objJoueur.compteurFrame/6))
+    
 
-    // =============================== Jamais faire logique de jeu dans dessiner ====================================
-    // Déplacer les gardes avant de les dessiner
-    // deplacerGardes();
-
-    // Dessin animation des joueurs
-    // let frame = Math.floor(performance.now() / 100 % 4);
-
-    // let joueurs = [
-    //     { x: 150, y: 200, couleur: "red" },
-    //     { x: 250, y: 200, couleur: "green" },
-    //     { x: 350, y: 200, couleur: "purple" }
-    // ];
-
-    // joueurs.forEach(joueur => {
-    //     dessinerJoueur(frame, joueur.couleur, joueur.x, joueur.y); -> Déplacer en haut
-    // });
-    // =============================== Jamais faire logique de jeu dans dessiner ====================================
-    // Dessiner les gardes après mise à jour
     dessinerGardes();
 
     dessinerMurs();
-
+    dessinerJoueur(Math.floor(objJoueur.compteurFrame/6),'white')
     objC2D.restore();
 }
 
@@ -1009,44 +994,58 @@ function dessinerMurs() {
 function dessinerJoueur(frame, couleurCorps) {
     objC2D.save();
 
+
+
     let centreJoueurDessinX = 10;
     let centreJoueurDessinY = 8;
 
     let x = objJoueur.positionX - objJoueur.largeur/2 - centreJoueurDessinX;
     let y = objJoueur.positionY - objJoueur.hauteur/2 - centreJoueurDessinY;
 
+    objC2D.translate(x,y)
+    objC2D.scale(1,1)
+
+
+
+
     // Définitiion de la couleur de la tenue du personnage
     objC2D.fillStyle = couleurCorps || "red";
 
     // Corps (inclut bras et tronc)
-    objC2D.fillRect(x + 4, y + 8, 12, 16);
+    // objC2D.fillRect( -8, -10, 16, 20);
+
+    let displacement = 30;
+
+    objC2D.fillRect(-6, -8, 12, 16);
 
     // Tête (avec casque jaune) // J'au changé à blanche pour mieux le faire ressembler à lode runner (de plus je ne comprends pas la raison de casque)
     objC2D.fillStyle = "white"; // Jaune orangé
-    objC2D.fillRect(x + 6, y, 8, 8);
+    objC2D.fillRect( -4, -16, 8, 8);
 
     // Casque cyan 
     objC2D.fillStyle = "cyan";
-    objC2D.fillRect(x + 8, y - 2, 4, 4);
+    objC2D.fillRect( -2, -18, 4, 4);
 
-    if (joueurEnMouvement) {
+
+    if (true) {
         let mouvement = frame % 4;
+        console.log('movement' + mouvement)
 
         // Animation des jambes
-        let jambeGaucheX = mouvement < 2 ? x + 4 : x + 6;
-        let jambeDroiteX = mouvement < 2 ? x + 10 : x + 8;
-        let jambeGaucheY = mouvement < 2 ? y + 26 : y + 24;
-        let jambeDroiteY = mouvement < 2 ? y + 24 : y + 26;
+        let jambeGaucheX = mouvement < 2 ?  4 :  6;
+        let jambeDroiteX = mouvement < 2 ?  10 :  8;
+        let jambeGaucheY = mouvement < 2 ? 26 : 24;
+        let jambeDroiteY = mouvement < 2 ? 24 : 26;
 
         objC2D.fillStyle = "white";
         objC2D.fillRect(jambeGaucheX, jambeGaucheY, 5, 10);
         objC2D.fillRect(jambeDroiteX, jambeDroiteY, 5, 10);
 
         // Animation des bras
-        let brasGaucheX = mouvement < 2 ? x + 2 : x + 5;
-        let brasDroiteX = mouvement < 2 ? x + 13 : x + 10;
-        let brasGaucheY = mouvement < 2 ? y + 12 : y + 6;
-        let brasDroiteY = mouvement < 2 ? y + 6 : y + 12;
+        let brasGaucheX = mouvement < 2 ?  2 :  5;
+        let brasDroiteX = mouvement < 2 ?  13 :  10;
+        let brasGaucheY = mouvement < 2 ? 12 : 6;
+        let brasDroiteY = mouvement < 2 ? 6 : 12;
 
         objC2D.fillStyle = couleurCorps;
         objC2D.fillRect(brasGaucheX, brasGaucheY, 5, 6);
@@ -1054,13 +1053,26 @@ function dessinerJoueur(frame, couleurCorps) {
     } else {
         // Position immobile
         objC2D.fillStyle = "white";
-        objC2D.fillRect(x + 5, y + 24, 5, 10); // Jambe gauche
-        objC2D.fillRect(x + 10, y + 24, 5, 10); // Jambe droite
+        objC2D.fillRect( 5, 24, 5, 10); // Jambe gauche
+        objC2D.fillRect( 10, 24, 5, 10); // Jambe droite
 
         objC2D.fillStyle = couleurCorps;
-        objC2D.fillRect(x + 2, y + 10, 5, 6); // Bras gauche
-        objC2D.fillRect(x + 13, y + 10, 5, 6); // Bras droit
+        objC2D.fillRect( 2, 10, 5, 6); // Bras gauche
+        objC2D.fillRect( 13, 10, 5, 6); // Bras droit
     }
+
+    // Debug
+    // objC2D.strokeStyle = 'pink'
+    // objC2D.beginPath();
+    // objC2D.moveTo(0,-objCanvas.height)
+    // objC2D.lineTo(0,objCanvas.height)
+    // objC2D.stroke();
+
+    // objC2D.fillStyle = 'pink'
+    // objC2D.beginPath();
+    // objC2D.arc(0, 0, 5, 0, 2 * Math.PI);
+    // objC2D.fill();
+
 
     objC2D.restore();
 }
