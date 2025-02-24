@@ -1026,6 +1026,20 @@ function dessinerJoueur(frame, couleurCorps) {
     objC2D.fillStyle = "cyan";
     objC2D.fillRect( -2, -18, 4, 4);
 
+    // Idée pour les maths des james et ou bras
+    /**
+     *  Les jambes peuts être comme cela (séparé par les frames et $ represente le corps)
+     *  (H = membre haut) (B = membre bas)
+     * 
+     *   $$$ |   $$$ | $$$ | $$$
+     *   $$$ |   $$$ | $$$ | $$$
+     *   $$$ |   $$$ | $$$ | $$$
+     *  H    |   H   |  H  |   H
+     * B     |  B    |   B |    B
+     * 
+     *  Par exemple, on multiplie le nombre du compteurFrame avec un nombre arbritaire pour determiner les positions
+     */
+
 
     if (true) {
         let mouvement = frame % 4;
