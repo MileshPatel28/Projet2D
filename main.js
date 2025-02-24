@@ -1038,6 +1038,7 @@ function dessinerJoueur(frame, couleurCorps) {
      * B     |  B    |   B |    B
      * 
      *  Par exemple, on multiplie le nombre du compteurFrame avec un nombre arbritaire pour determiner les positions
+     *  Peut être utilisé un fonction comme sin(Math.PI*x/60) pour avoir un aller retour sur 2 seconds
      */
 
 
