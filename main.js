@@ -262,7 +262,7 @@ function initCarteTuile(){
 function initJoueur() {
     objJoueur = new Object();
 
-    objJoueur.compteurFrame = 0;
+    objJoueur.compteurFrame = 1;
 
     objJoueur.largeur = 50;
     objJoueur.hauteur = 50;
@@ -1003,7 +1003,7 @@ function dessinerJoueur(frame, couleurCorps) {
     let y = objJoueur.positionY - objJoueur.hauteur/2 - centreJoueurDessinY;
 
     objC2D.translate(x,y)
-    objC2D.scale(1,1)
+    objC2D.scale(-1,1)
 
 
 
@@ -1045,27 +1045,74 @@ function dessinerJoueur(frame, couleurCorps) {
 
     if (true) {
         let mouvement = frame % 4;
-        console.log('movement' + mouvement)
 
-        // Animation des jambes
-        let jambeGaucheX = mouvement < 2 ?  4 :  6;
-        let jambeDroiteX = mouvement < 2 ?  10 :  8;
-        let jambeGaucheY = mouvement < 2 ? 26 : 24;
-        let jambeDroiteY = mouvement < 2 ? 24 : 26;
+        let pourcentageChangement = Math.sin(Math.PI*(10*Math.floor(objJoueur.compteurFrame/10))/60)*1.05
 
-        objC2D.fillStyle = "white";
-        objC2D.fillRect(jambeGaucheX, jambeGaucheY, 5, 10);
-        objC2D.fillRect(jambeDroiteX, jambeDroiteY, 5, 10);
+        let jambeGaucheX1 = Math.floor(-3.5*pourcentageChangement -3.5) +2;
+        let jambeGaucheY1 = 8;
 
-        // Animation des bras
-        let brasGaucheX = mouvement < 2 ?  2 :  5;
-        let brasDroiteX = mouvement < 2 ?  13 :  10;
-        let brasGaucheY = mouvement < 2 ? 12 : 6;
-        let brasDroiteY = mouvement < 2 ? 6 : 12;
+        let jambeGaucheX2 = Math.floor(-5*pourcentageChangement -3) +2
+        let jambeGaucheY2 = 17
 
-        objC2D.fillStyle = couleurCorps;
-        objC2D.fillRect(brasGaucheX, brasGaucheY, 5, 6);
-        objC2D.fillRect(brasDroiteX, brasDroiteY, 5, 6);
+        let jambeDroiteX1 = Math.floor(-3.5*-pourcentageChangement -3.5) +2;
+        let jambeDroiteY1 = 8;
+
+        let jambeDroiteX2 = Math.floor(-5*-pourcentageChangement -3) +2;
+        let jambeDroiteY2 = 17;
+
+
+        let brasGaucheX1 = Math.floor(-7.5*pourcentageChangement - 2.5) +2;
+        let brasGaucheY1 = -5;
+
+        let brasGaucheX2 = Math.floor(-7.5*pourcentageChangement - 2) +2;
+        let brasGaucheY2 = 0;
+
+        let brasDroiteX1 = Math.floor(-7.5*-pourcentageChangement - 2.5) +2;
+        let brasDroiteY1 = -5;
+
+        let brasDroiteX2 = Math.floor(-7.5*-pourcentageChangement - 2) +2;
+        let brasDroiteY2 = 0;
+
+        objC2D.fillStyle = 'white'
+        objC2D.fillRect(jambeGaucheX1, jambeGaucheY1, 5, 10);
+        objC2D.fillRect(jambeGaucheX2,jambeGaucheY2,5,5)
+
+        objC2D.fillRect(jambeDroiteX1,jambeDroiteY1,5,10);
+        objC2D.fillRect(jambeDroiteX2,jambeDroiteY2,5,5);
+
+        
+
+        objC2D.fillRect(brasGaucheX1,brasGaucheY1,5,6)
+        objC2D.fillRect(brasGaucheX2,brasGaucheY2,5,6)
+
+
+        objC2D.fillRect(brasDroiteX1,brasDroiteY1,5,6)
+        objC2D.fillRect(brasDroiteX2,brasDroiteY2,5,6)
+
+
+        // // Animation des jambes
+        // let jambeGaucheX = mouvement < 2 ?  4 :  6;
+        // let jambeDroiteX = mouvement < 2 ?  10 :  8;
+        // let jambeGaucheY = mouvement < 2 ? 26 : 24;
+        // let jambeDroiteY = mouvement < 2 ? 24 : 26;
+
+        // objC2D.fillStyle = "white";
+        // objC2D.fillRect(jambeGaucheX, jambeGaucheY, 5, 10);
+        // objC2D.fillRect(jambeDroiteX, jambeDroiteY, 5, 10);
+
+        // // Animation des bras
+        // let brasGaucheX = mouvement < 2 ?  2 :  5;
+        // let brasDroiteX = mouvement < 2 ?  13 :  10;
+        // let brasGaucheY = mouvement < 2 ? 12 : 6;
+        // let brasDroiteY = mouvement < 2 ? 6 : 12;
+
+        // objC2D.fillStyle = couleurCorps;
+        // objC2D.fillRect(brasGaucheX, brasGaucheY, 5, 6);
+        // objC2D.fillRect(brasDroiteX, brasDroiteY, 5, 6);
+
+
+
+        
     } else {
         // Position immobile
         objC2D.fillStyle = "white";
