@@ -650,167 +650,119 @@ function dessinerJoueur(frame, couleurCorps) {
     objC2D.restore();
 }
 
-
-
-var objGardes = [];
-
+// Initialisation des gardes
 function initGardes(nombreGardes) {
     objGardes = [];
-    let couleursGardes = ["red", "green", "purple"]; // Couleurs des chandails des gardes
-    let positionsUtilisees = new Set();
-
+    let couleursGardes = ["red", "green", "purple"];
     let passerellesDisponibles = objCarteTuile.tabTuile.filter(tuile => tuile.type === 'P');
 
     for (let i = 0; i < nombreGardes; i++) {
-        let positionValide = false;
-        let positionGarde = null;
+        let tuile = passerellesDisponibles[Math.floor(Math.random() * passerellesDisponibles.length)];
+        let positionX = tuile.tuileX * objCarteTuile.xLargeurTuile;
+        let positionY = tuile.tuileY * objCarteTuile.yLargeurTuile - 50;
 
-        while (!positionValide) {
-            let tuile = passerellesDisponibles[Math.floor(Math.random() * passerellesDisponibles.length)];
-            let positionX = tuile.tuileX * objCarteTuile.xLargeurTuile;
-            let positionY = tuile.tuileY * objCarteTuile.yLargeurTuile - 50;
-
-            let clePosition = `${positionX}-${positionY}`;
-
-            if (!positionsUtilisees.has(clePosition) && !lingotsRamasses.includes(clePosition)) {
-                positionGarde = {
-                    x: positionX,
-                    y: positionY,
-                    couleur: couleursGardes[i % couleursGardes.length],
-                    vitesseX: 1,
-                    vitesseY: 2,
-                    direction: Math.random() < 0.5 ? "gauche" : "droite",
-                    enTrou: false,
-                    tempsDansTrou: 0
-                };
-                positionsUtilisees.add(clePosition);
-                positionValide = true;
-            }
-        }
-        objGardes.push(positionGarde);
+        objGardes.push({
+            x: positionX,
+            y: positionY,
+            couleur: couleursGardes[i % couleursGardes.length],
+            vitesseX: 2,
+            direction: Math.random() < 0.5 ? "gauche" : "droite",
+            frame: 0
+        });
     }
 }
 
-function dessinerGardes() {
-    objGardes.forEach(garde => {
-        dessinerPersonnage(garde.x, garde.y, garde.couleur);
-    });
-}
-
-// Fonction qui gère le déplacement et la chute des gardes
+// Déplacement des gardes
 function deplacerGardes() {
     objGardes.forEach(garde => {
-        if (garde.enTrou) {
-            garde.tempsDansTrou++;
-
-            if (garde.tempsDansTrou >= 240) { // 4 secondes (60 FPS * 4)
-                if (trouRebouche(garde.x, garde.y)) {
-                    reinitialiserGarde(garde);
-                } else {
-                    garde.enTrou = false;
-                }
-            }
-            return;
-        }
-
-        // Vérifier si le garde est en train de tomber
-        if (gardeTombe(garde)) {
-            garde.y += garde.vitesseY;
-            return;
-        }
-
-        // Déplacement horizontalement en évitant les obstacles
+        let directionInitiale = garde.direction;
         let nouvellePositionX = garde.x + (garde.direction === "gauche" ? -garde.vitesseX : garde.vitesseX);
 
-        if (!collisionMur(nouvellePositionX, garde.y) && !trouDetecte(nouvellePositionX, garde.y)) {
+        if (!collisionMur(nouvellePositionX, garde.y) && !trouDetecte(nouvellePositionX, garde.y) && !collisionAvecAutreGarde(garde, nouvellePositionX)) {
             garde.x = nouvellePositionX;
+            garde.frame = (garde.frame + 1) % 4; // Animation des pieds et mains
         } else {
             garde.direction = garde.direction === "gauche" ? "droite" : "gauche";
         }
     });
 }
 
-// Vérification si un garde doit tomber
-function gardeTombe(garde) {
-    let positionDessous = { x: garde.x, y: garde.y + 50 };
-
-    return !collisionPasserelle(positionDessous) && !collisionBarre(positionDessous);
-}
-
-// Vérification si un garde touche une passerelle
-function collisionPasserelle(position) {
-    return objCarteTuile.tabTuile.some(tuile =>
-        tuile.type === 'P' && position.y === tuile.tuileY * objCarteTuile.yLargeurTuile
-    );
-}
-
-// Vérification si un garde touche une barre de franchissement
-function collisionBarre(position) {
-    return objCarteTuile.tabTuile.some(tuile =>
-        tuile.type === 'E' && position.y === tuile.tuileY * objCarteTuile.yLargeurTuile
-    );
-}
-
-// Vérification si un garde se trouve devant un trou
-function trouDetecte(x, y) {
-    return objCarteTuile.tabTuile.some(tuile =>
-        tuile.type === 'V' && tuile.tuileX * objCarteTuile.xLargeurTuile === x &&
-        tuile.tuileY * objCarteTuile.yLargeurTuile === y + 50
-    );
-}
-
-// Vérification si un garde touche un mur
+// Vérifie si un garde touche un mur
 function collisionMur(x, y) {
     return objMurs.tabMurs.some(mur => x >= mur.xDebut && x <= mur.xFin && y >= mur.yDebut && y <= mur.yFin);
 }
 
-// Vérification si un trou a été rebouché
-function trouRebouche(x, y) {
-    return objCarteTuile.tabTuile.some(tuile =>
-        tuile.type === 'B' && tuile.tuileX * objCarteTuile.xLargeurTuile === x &&
-        tuile.tuileY * objCarteTuile.yLargeurTuile === y
+// Vérifie si un garde est sur un trou
+function trouDetecte(x, y) {
+    return objCarteTuile.tabTuile.some(tuile => tuile.type === 'V' && 
+        tuile.tuileX * objCarteTuile.xLargeurTuile === x &&
+        tuile.tuileY * objCarteTuile.yLargeurTuile === y + 50
     );
 }
 
-// Réinitialisation de la position du garde s'il est mort dans un trou rebouché
-function reinitialiserGarde(garde) {
-    let positionsDisponibles = objCarteTuile.tabTuile.filter(tuile => tuile.tuileY === 2);
-    let tuile = positionsDisponibles[Math.floor(Math.random() * positionsDisponibles.length)];
-    garde.x = tuile.tuileX * objCarteTuile.xLargeurTuile;
-    garde.y = tuile.tuileY * objCarteTuile.yLargeurTuile - 50;
-    garde.enTrou = false;
-    garde.tempsDansTrou = 0;
+// Empêche les gardes d'entrer en collision
+function collisionAvecAutreGarde(garde, nouvelleX) {
+    return objGardes.some(g => g !== garde && Math.abs(g.x - nouvelleX) < 10);
 }
 
 // Fonction principale d'animation
 function animer() {
     objCycleAnimation = requestAnimationFrame(animer);
     effacerDessin();
+    dessinerGardes();
     deplacerGardes();
     dessiner();
 }
 
-/*function dessinerJoueur(frame) {
+// Dessine les gardes avec animation des pieds et mains
+function dessinerGardes() {
+    objGardes.forEach(garde => {
+        dessinerPersonnageAnime(garde.x, garde.y, garde.couleur, garde.frame);
+    });
+}
+
+// Animation des gardes avec mouvement des pieds et des mains
+function dessinerPersonnageAnime(x, y, couleur, frame) {
     objC2D.save();
-
-    objC2D.fillStyle = 'blue'
-    objC2D.translate(
-        objJoueur.positionX,
-        objJoueur.positionY
-    )
-
-    objC2D.beginPath();
-    objC2D.rect(
-        -objJoueur.largeur/2,
-        -objJoueur.hauteur/2,
-        objJoueur.largeur/2,
-        objJoueur.hauteur/2
-    )
+    objC2D.fillStyle = couleur;
     
-    objC2D.fill();
+    // Corps
+    objC2D.fillRect(x + 4, y + 8, 12, 16);
+    
+    // Tête
+    objC2D.fillStyle = "#FFA500";
+    objC2D.fillRect(x + 6, y, 8, 8);
+    
+    // Casque
+    objC2D.fillStyle = "cyan";
+    objC2D.fillRect(x + 8, y - 2, 4, 4);
+    
+    // Animation des bras et jambes
+    let mouvement = frame % 4;
+    let jambeGaucheX = mouvement < 2 ? x + 4 : x + 6;
+    let jambeDroiteX = mouvement < 2 ? x + 10 : x + 8;
+    let jambeGaucheY = mouvement < 2 ? y + 26 : y + 24;
+    let jambeDroiteY = mouvement < 2 ? y + 24 : y + 26;
+
+    objC2D.fillStyle = "white";
+    objC2D.fillRect(jambeGaucheX, jambeGaucheY, 5, 10);
+    objC2D.fillRect(jambeDroiteX, jambeDroiteY, 5, 10);
+
+    let brasGaucheX = mouvement < 2 ? x + 2 : x + 5;
+    let brasDroiteX = mouvement < 2 ? x + 13 : x + 10;
+    let brasGaucheY = mouvement < 2 ? y + 12 : y + 6;
+    let brasDroiteY = mouvement < 2 ? y + 6 : y + 12;
+
+    objC2D.fillStyle = couleur;
+    objC2D.fillRect(brasGaucheX, brasGaucheY, 5, 6);
+    objC2D.fillRect(brasDroiteX, brasDroiteY, 5, 6);
 
     objC2D.restore();
-}*/
+}
+
+// Lancement du jeu
+initGardes(3);
+animer();
 
 
 
