@@ -40,7 +40,7 @@ function initJeu() {
 
     console.log('init animation v1');
     objCanvas = document.getElementById('monCanvas')
-    objCanvas.focus(); //DECOMENENTEZ!!!!!!
+    // objCanvas.focus(); //DECOMENENTEZ!!!!!!
 
 
     objC2D = objCanvas.getContext('2d');
@@ -272,6 +272,7 @@ function initJoueur() {
 
     objJoueur.vitesseY = 3;
     objJoueur.vitesseX = 4;
+    objJoueur.direction = 0;
 
     objJoueur.binTomber = true;
     objJoueur.tuileActive = {};
@@ -279,7 +280,6 @@ function initJoueur() {
     objJoueur.tuileEntourage = []
 
     objJoueur.binGrimpeEchelle = false;
-
     objJoueur.binRelache = false;
 }
 
@@ -339,8 +339,14 @@ function mettreAjourAnimation() {
 // Évenement pour détecter les touches du utilisateur
 document.addEventListener('keydown', (event) => {
     if (event.key == 'ArrowUp') objControlleurJeu.cleHaut = true;
-    if (event.key == 'ArrowLeft') objControlleurJeu.cleGauche = true;
-    if (event.key == 'ArrowRight') objControlleurJeu.cleDroit = true;
+    if (event.key == 'ArrowLeft') {
+        objControlleurJeu.cleGauche = true;
+        objJoueur.direction = -1;
+    }
+    if (event.key == 'ArrowRight') {
+        objControlleurJeu.cleDroit = true;
+        objJoueur.direction = 1;
+    }
     if (event.key == 'ArrowDown') objControlleurJeu.cleBas = true;
     if (event.key == 'x') {
         let tuileGauchBas = objJoueur.tuileEntourage.find(
@@ -707,8 +713,8 @@ function dessiner() {
 
     dessinerPointage();
 
-    dessinerJoueurDebug();
-    console.log(Math.floor(objJoueur.compteurFrame/6))
+    //dessinerJoueurDebug();
+    // console.log(Math.floor(objJoueur.compteurFrame/6))
     
 
     dessinerGardes();
@@ -1002,11 +1008,15 @@ function dessinerJoueur(frame, couleurCorps) {
     let y = objJoueur.positionY;
 
     objC2D.translate(x-25,y-25)
-    objC2D.scale(1,1)
+
+    if(objJoueur.direction == 1){
+        objC2D.scale(-1,1)
+    }
+    
 
 
-    let largeurTete = 14;
-    let hauteurTete = 10;
+    let largeurTete = 10;
+    let hauteurTete = 9;
 
     // objC2D.fillStyle = 'pink'
     // objC2D.beginPath();
@@ -1016,62 +1026,14 @@ function dessinerJoueur(frame, couleurCorps) {
 
 
     objC2D.fillStyle = 'white'
-    // Position Marche 1
-    objC2D.fillRect(-largeurTete/2,-hauteurTete/2 - objJoueur.hauteur/4,largeurTete,hauteurTete)
-            
-    // Bras 1
-    // objC2D.fillRect(-4,-8,14,4)
-    objC2D.fillRect(6,-4,9,4)
-    objC2D.fillRect(10,0,9,4)
 
-    // Bras 2
-    objC2D.fillRect(-10,1,13,4)
-    objC2D.fillRect(-10,-3,4,4)
     
-    // Corps
-    objC2D.fillRect(-2,-8,9,20)
+    if(false); // POur debug
+    else if(objControlleurJeu.cleGauche || objControlleurJeu.cleDroit){
+        if(objJoueur.compteurFrame % 30 <= 10){
 
-    // Jambe 1
-    objC2D.fillRect(4,10,5,5)
-    objC2D.fillRect(7,13,5,5)
-    objC2D.fillRect(8,16,7,7)
-
-    // Jambe 2 
-    objC2D.fillRect(-4,10,5,5)
-    objC2D.fillRect(-8,13,7,7)
-
-
-
-    if(true){
-
-    }
-    else if(true){
-        if(objJoueur.compteurFrame % 60 <= 30){
             // Position Marche 1
-            objC2D.fillRect(-largeurTete/2,-hauteurTete/2 - objJoueur.hauteur/4,largeurTete,hauteurTete)
-            
-            // Bras 1
-            objC2D.fillRect(-4,-8,14,4)
-            objC2D.fillRect(8,-4,9,4)
-            objC2D.fillRect(12,0,9,4)
-
-            // Bras 2
-            objC2D.fillRect(-8,-4,13,4)
-            objC2D.fillRect(-15,0,7,4)
-
-            // Corps
-            objC2D.fillRect(-1,0,8,14)
-
-            // Jambe 1
-            objC2D.fillRect(4,14,16,3)
-
-            // Jambe 2 
-            objC2D.fillRect(-4,12,5,5)
-            objC2D.fillRect(-8,15,7,12)
-        }
-        else if(objJoueur.compteurFrame % 60 <= 60){
-            // Position Marche 1
-            objC2D.fillRect(-largeurTete/2,-hauteurTete/2 - objJoueur.hauteur/4,largeurTete,hauteurTete)
+            objC2D.fillRect(-largeurTete/2,-hauteurTete/2 - objJoueur.hauteur/4,largeurTete + 2,hauteurTete)
                     
             // Bras 1
             // objC2D.fillRect(-4,-8,14,4)
@@ -1092,17 +1054,90 @@ function dessinerJoueur(frame, couleurCorps) {
 
             // Jambe 2 
             objC2D.fillRect(-4,10,5,5)
-            objC2D.fillRect(-8,13,7,7)            
+            objC2D.fillRect(-8,13,7,7) 
+
+        }
+        else if(objJoueur.compteurFrame % 30 <= 20){
+
+            // Position Marche 2
+            objC2D.fillRect(-largeurTete/2,-hauteurTete/2 - objJoueur.hauteur/4,largeurTete + 2,hauteurTete)
+                    
+            // Bras 1
+            // objC2D.fillRect(-4,-8,14,4)
+            objC2D.fillRect(6,-4,5,4)
+            objC2D.fillRect(7,0,7,7)
+
+            // Bras 2
+            objC2D.fillRect(-6,1,4,4)
+            objC2D.fillRect(-14,5,8,4)
+            
+            // Corps
+            objC2D.fillRect(-2,-8,9,20)
+
+            // Jambe 1
+            objC2D.fillRect(4,10,5,5)
+            objC2D.fillRect(7,13,5,5)
+            objC2D.fillRect(8,16,7,7)
+
+            // Jambe 2 
+            objC2D.fillRect(-7,10,7,7)
+                    
+        }
+        else if(objJoueur.compteurFrame % 30 <= 30){
+            // Position Marche 3
+            objC2D.fillRect(-largeurTete/2,-hauteurTete/2 - objJoueur.hauteur/4,largeurTete + 2,hauteurTete)
+            
+            // Bras 1
+            objC2D.fillRect(-4,-8,14,4)
+            objC2D.fillRect(8,-4,9,4)
+            objC2D.fillRect(12,0,9,4)
+
+            // Bras 2
+            objC2D.fillRect(-8,-4,13,4)
+            objC2D.fillRect(-15,0,7,4)
+
+            // Corps
+            objC2D.fillRect(-1,0,8,14)
+
+            // Jambe 1
+            objC2D.fillRect(4,14,16,3)
+
+            // Jambe 2 
+            objC2D.fillRect(-4,12,5,5)
+            objC2D.fillRect(-8,15,7,12)   
         }
     }
     else{
-        // Position Idle
-        objC2D.fillRect(-largeurTete/2,-hauteurTete/2 - objJoueur.hauteur/4,largeurTete,hauteurTete)
-        objC2D.fillRect(-4,-6,8,16)
-        objC2D.fillRect(-8,-2,4,14)
-        objC2D.fillRect(4,-2,4,14)
-        objC2D.fillRect(-4,10,4,14)
-        objC2D.fillRect(0,10,4,14)
+        // Position Marche 3
+        objC2D.fillRect(-largeurTete/2,-hauteurTete/2 - objJoueur.hauteur/4,largeurTete + 2,hauteurTete)
+            
+        // Bras 1
+        objC2D.fillRect(-4,-8,14,4)
+        objC2D.fillRect(8,-4,9,4)
+        objC2D.fillRect(12,0,9,4)
+
+        // Bras 2
+        objC2D.fillRect(-8,-4,13,4)
+        objC2D.fillRect(-15,0,7,4)
+
+        // Corps
+        objC2D.fillRect(-1,0,8,14)
+
+        // Jambe 1
+        objC2D.fillRect(4,14,16,3)
+
+        // Jambe 2 
+         objC2D.fillRect(-4,12,5,5)
+        objC2D.fillRect(-8,15,7,12) 
+        
+
+        // // Position Idle
+        // objC2D.fillRect(-largeurTete/2,-hauteurTete/2 - objJoueur.hauteur/4,largeurTete,hauteurTete)
+        // objC2D.fillRect(-4,-6,8,16)
+        // objC2D.fillRect(-8,-2,4,14)
+        // objC2D.fillRect(4,-2,4,14)
+        // objC2D.fillRect(-4,10,4,14)
+        // objC2D.fillRect(0,10,4,14)
     }
 
     // Définitiion de la couleur de la tenue du personnage
