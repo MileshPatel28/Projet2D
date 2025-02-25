@@ -1009,6 +1009,9 @@ function dessinerJoueur(frame, couleurCorps) {
 
     objC2D.translate(x-25,y-25)
 
+    if(objJoueur.binGrimpeEchelle && objJoueur.positionY % 16 <= 8){
+        objC2D.scale(-1,1)
+    }
     if(objJoueur.binTomber && objJoueur.compteurFrame % 15 <= 7){
         objC2D.scale(-1,1)
     }
@@ -1033,6 +1036,30 @@ function dessinerJoueur(frame, couleurCorps) {
 
     
     if(false); // POur debug
+    else if(objJoueur.binGrimpeEchelle){
+        // Dessiner le grimpe echelle du personnage
+        largeurTete = 6
+        objC2D.fillRect(-largeurTete/2,-hauteurTete/2 - objJoueur.hauteur/4,largeurTete + 2,hauteurTete)
+                            
+        // Bras Droite
+        objC2D.fillRect(5,-2,12,4)
+        objC2D.fillRect(13,-8,4,6)
+
+        // Bras Gauche
+        objC2D.fillRect(-21,-8,12,4)
+        objC2D.fillRect(-21,-14,4,6)
+                    
+        // Corps
+        objC2D.fillRect(-9,-8,14,23)
+
+        // Jambe 1
+        objC2D.fillRect(-12,15,8,8) 
+        objC2D.fillRect(-16,19,12,4)
+
+        // Jambe 2
+        objC2D.fillRect(1,15,8,12) 
+        objC2D.fillRect(1,23,12,4)
+    }
     else if(objJoueur.binTomber){
         // Dessiner le tomber du personnage
         objC2D.fillRect(-largeurTete/2,-hauteurTete/2 - objJoueur.hauteur/4,largeurTete + 2,hauteurTete)
@@ -1313,7 +1340,7 @@ function dessinerPointage(){
 
 
     // Les points
-    let strPointage = 'Score: ' + String(objStatJeu.score).padStart(7,'0');
+    let strPointage = 'Score:' + (String(objStatJeu.score).padStart(7,'0'));
 
     objC2D.fillStyle = 'yellow'
     objC2D.font = "48px impact"
