@@ -22,7 +22,7 @@ var lingotsRamasses = 0;
 
 var joueurEnMouvement = false;
 
-var objGardes = [];
+var objGardes = null;
 
 
 
@@ -51,6 +51,7 @@ function initJeu() {
     initCarteTuile();
 
     initJoueur();
+    initGardes();
 
     dessiner();
     animer();
@@ -270,8 +271,8 @@ function initJoueur() {
     objJoueur.positionX = objCanvas.width/2; // Changer a objCanvas.width/2
     objJoueur.positionY = 775; //775
 
-    objJoueur.vitesseY = 3;
-    objJoueur.vitesseX = 4;
+    objJoueur.vitesseX = 3;
+    objJoueur.vitesseY = 2;
     objJoueur.direction = 0;
 
     objJoueur.binTomber = false;
@@ -283,6 +284,30 @@ function initJoueur() {
     objJoueur.binRelache = false;
 }
 
+
+function initGardes(){
+    objGardes = new Object();
+
+    objGardes.largeur = 40;
+    objGardes.hauteur = 50;
+
+    objGardes.vitesseX = 2;
+    objGardes.vitesseY = 2;
+
+    objGardes.tabGardes = [];
+
+    let objGardeDebug = new Object();
+    objGardeDebug.positionX = 25*objCarteTuile.xLargeurTuile
+    objGardeDebug.positionY = 500;
+
+    objGardeDebug.tuileActive = {}
+    objGardeDebug.tuileEntourage = []
+
+    objGardeDebug.binGrimpeEchelle = false;
+    objGardeDebug.binRelache = false;
+
+    objGardes.tabGardes.push(objGardeDebug)
+}
 
 /**
  *  ----------------------
@@ -324,6 +349,7 @@ function mettreAjourAnimation() {
 
         //deplacerGardes();
         miseAJourJoueur();
+        miseAJourGardes();
     }
 
     if(objJoueur.positionY < objCarteTuile.yLargeurTuile*2){
@@ -699,6 +725,159 @@ function joueurProchaineNiveau(){
     }
 }
 
+function miseAJourGardes(){
+    objGardes.tabGardes.forEach((garde) => {
+
+        // Cette partie pourrait être un peu taxant sur l'application mais ça marche!
+        objCarteTuile.tabTuile.forEach((tuile) => {
+            if(garde.positionX >= (tuile.tuileX) * objCarteTuile.xLargeurTuile 
+                && garde.positionX <= (tuile.tuileX + 1) * objCarteTuile.xLargeurTuile
+                && garde.positionY >= (tuile.tuileY) * objCarteTuile.yLargeurTuile 
+                && garde.positionY <= (tuile.tuileY + 1) * objCarteTuile.yLargeurTuile
+            ){
+                garde.tuileActive = tuile;
+            }
+        })
+
+        if(garde.tuileActive){
+            garde.tuileEntourage = objCarteTuile.tabTuile.filter(tuile => 
+                tuile.tuileX >= garde.tuileActive.tuileX - 1 && tuile.tuileX <= garde.tuileActive.tuileX + 1 &&
+                tuile.tuileY >= garde.tuileActive.tuileY - 1 && tuile.tuileY <= garde.tuileActive.tuileY + 1
+            )
+        }
+
+        console.log(garde.tuileEntourage)
+        
+        deplacerGarde(garde);
+        graviteGardes(garde);
+    })
+
+}
+
+function deplacerGarde(garde){
+    let binDeplacementGauche = false;
+    let binDeplacementDroite = false;
+    let binDeplacementHaut = false;
+    let binDeplacementBas = false;
+
+    let distanceJoueurX = objJoueur.positionX - garde.positionX;
+    let distanceJoueurY = objJoueur.positionY - garde.positionY;
+
+    let directionGardeXPrefere = (distanceJoueurX >= 0) ? 1 : -1;
+    let directionGardeYPrefere = (distanceJoueurY > 0) ? 1 : -1;
+
+
+    if(!garde.binTomber){
+
+        if(Math.abs(distanceJoueurX) >= 5){
+            if(directionGardeXPrefere == -1){
+                binDeplacementGauche = true;
+            }
+            else if(directionGardeXPrefere == 1){
+                binDeplacementDroite = true;
+            }
+        }
+
+        if(Math.abs(distanceJoueurY) >= 5){
+            if(directionGardeYPrefere == 1){
+                binDeplacementBas = true;
+            }
+            else if(directionGardeYPrefere == -1){
+                binDeplacementHaut = true;
+            }
+        }
+
+
+
+        // Les collisions
+
+        
+    }
+    else{
+
+    }
+
+    
+
+    if(binDeplacementGauche){
+        garde.positionX -= objGardes.vitesseX;
+    }
+    if(binDeplacementDroite){
+        garde.positionX += objGardes.vitesseX;
+    }
+    if(binDeplacementHaut){
+        garde.positionY -= objGardes.vitesseY;
+    }
+    if(binDeplacementBas){
+        garde.positionY += objGardes.vitesseY;
+    }
+}
+
+function graviteGardes(garde){
+    let binDescend = true;
+
+    if (!(garde.positionY < objMurs.tabMurs[2].yDebut)) {
+        binDescend = false;
+    }
+
+
+    let tuileBas = garde.tuileEntourage.find(
+        (tuile) => 
+            tuile.tuileX == garde.tuileActive.tuileX  &&
+            tuile.tuileY == garde.tuileActive.tuileY + 1
+    )
+
+    let tuileGauchBas = garde.tuileEntourage.find(
+        (tuile) => 
+            tuile.tuileX == garde.tuileActive.tuileX - 1 &&
+            tuile.tuileY == garde.tuileActive.tuileY + 1
+    )
+
+    let tuileDroitBas = garde.tuileEntourage.find(
+        (tuile) => 
+            tuile.tuileX == garde.tuileActive.tuileX + 1 &&
+            tuile.tuileY == garde.tuileActive.tuileY + 1
+    )
+
+
+    if(tuileBas.type != 'V' && tuileBas.type != 'F' && tuileBas.type != 'L'){
+        if(tuileBas.tuileY*objCarteTuile.yLargeurTuile< garde.positionY + objGardes.hauteur/2){
+            binDescend = false;
+        }
+    }
+    else if(tuileBas.type == 'V'){
+        if( tuileGauchBas.type != 'V' && 
+            (tuileGauchBas.tuileX + 1 ) * objCarteTuile.xLargeurTuile > garde.positionX - objGardes.largeur/2
+        ){
+            binDescend = false;
+        }
+        else if( tuileDroitBas.type != 'V' &&
+            (tuileDroitBas.tuileX) * objCarteTuile.xLargeurTuile < garde.positionX + objGardes.largeur/2
+        ){
+            binDescend = false;
+        }
+    }
+
+    if(garde.tuileActive.type == 'F' || garde.tuileActive.type == 'P'){
+        binDescend = false;
+    }
+
+    if(garde.binGrimpeEchelle){
+        binDescend = false;
+    }
+
+    garde.binTomber = binDescend;
+
+    if(binDescend && !garde.binGrimpeEchelle){
+        garde.positionY += 1
+        garde.binRelache = true;
+    }
+    else if(garde.tuileActive.type == 'F' && !garde.binRelache){
+        garde.positionY = garde.tuileActive.tuileY*objCarteTuile.yLargeurTuile + garde.hauteur/2 - 1
+    }
+}
+
+
 /**
  * -----------------
  *  Dessinage du jeu
@@ -716,7 +895,7 @@ function dessiner() {
     dessinerPointage();
     
 
-    // dessinerGardes();
+    dessinerGardes();
 
     dessinerMurs();
     dessinerJoueur(Math.floor(objJoueur.compteurFrame/6),'white')
@@ -916,7 +1095,6 @@ function dessinerBarreDeFranchissement(){
     )
     objC2D.fill();
 }
-
 
 // J'ai changé les paramètre pour rendre le code plus lisibles en haut et de rendre plus compatible
 function dessinerLingots() {
@@ -1301,6 +1479,27 @@ function dessinerJoueur(frame, couleurCorps) {
     objC2D.restore();
 }
 
+function dessinerGardes(){
+    objC2D.save();
+
+    objGardes.tabGardes.forEach((garde) => {
+        objC2D.save();
+
+        objC2D.translate(garde.positionX-25,garde.positionY-25);
+
+        // Pour debug
+        objC2D.fillStyle = 'red';
+        objC2D.fillRect(
+            -objGardes.largeur/2,
+            -objGardes.hauteur/2,
+            objGardes.largeur,
+            objGardes.hauteur
+        )
+        objC2D.restore();
+    })
+
+    objC2D.restore();
+}
 
 function dessinerPointage(){
     objC2D.save();
