@@ -714,11 +714,9 @@ function dessiner() {
     
 
     dessinerPointage();
-
-    // console.log(Math.floor(objJoueur.compteurFrame/6))
     
 
-    dessinerGardes();
+    // dessinerGardes();
 
     dessinerMurs();
     dessinerJoueur(Math.floor(objJoueur.compteurFrame/6),'white')
