@@ -40,7 +40,7 @@ function initJeu() {
 
     console.log('init animation v1');
     objCanvas = document.getElementById('monCanvas')
-    //objCanvas.focus(); !!!!!!!!DECOMENENTEZ!!!!!!
+    objCanvas.focus(); //DECOMENENTEZ!!!!!!
 
 
     objC2D = objCanvas.getContext('2d');
@@ -1016,35 +1016,84 @@ function dessinerJoueur(frame, couleurCorps) {
 
 
     objC2D.fillStyle = 'white'
-
-    // Position Idle
+    // Position Marche 1
     objC2D.fillRect(-largeurTete/2,-hauteurTete/2 - objJoueur.hauteur/4,largeurTete,hauteurTete)
-    
+            
     // Bras 1
-    objC2D.fillRect(-4,-8,14,4)
-    objC2D.fillRect(8,-4,9,4)
-    objC2D.fillRect(12,0,9,4)
+    // objC2D.fillRect(-4,-8,14,4)
+    objC2D.fillRect(6,-4,9,4)
+    objC2D.fillRect(10,0,9,4)
 
     // Bras 2
-    objC2D.fillRect(-8,-4,13,4)
-    objC2D.fillRect(-15,0,7,4)
-
+    objC2D.fillRect(-10,1,13,4)
+    objC2D.fillRect(-10,-3,4,4)
+    
     // Corps
-    objC2D.fillRect(-1,0,8,14)
+    objC2D.fillRect(-2,-8,9,20)
 
     // Jambe 1
-    objC2D.fillRect(4,14,16,3)
+    objC2D.fillRect(4,10,5,5)
+    objC2D.fillRect(7,13,5,5)
+    objC2D.fillRect(8,16,7,7)
 
     // Jambe 2 
-    objC2D.fillRect(-4,12,5,5)
-    objC2D.fillRect(-8,15,7,12)
+    objC2D.fillRect(-4,10,5,5)
+    objC2D.fillRect(-8,13,7,7)
+
 
 
     if(true){
 
     }
-    else if(binMovement){
-        
+    else if(true){
+        if(objJoueur.compteurFrame % 60 <= 30){
+            // Position Marche 1
+            objC2D.fillRect(-largeurTete/2,-hauteurTete/2 - objJoueur.hauteur/4,largeurTete,hauteurTete)
+            
+            // Bras 1
+            objC2D.fillRect(-4,-8,14,4)
+            objC2D.fillRect(8,-4,9,4)
+            objC2D.fillRect(12,0,9,4)
+
+            // Bras 2
+            objC2D.fillRect(-8,-4,13,4)
+            objC2D.fillRect(-15,0,7,4)
+
+            // Corps
+            objC2D.fillRect(-1,0,8,14)
+
+            // Jambe 1
+            objC2D.fillRect(4,14,16,3)
+
+            // Jambe 2 
+            objC2D.fillRect(-4,12,5,5)
+            objC2D.fillRect(-8,15,7,12)
+        }
+        else if(objJoueur.compteurFrame % 60 <= 60){
+            // Position Marche 1
+            objC2D.fillRect(-largeurTete/2,-hauteurTete/2 - objJoueur.hauteur/4,largeurTete,hauteurTete)
+                    
+            // Bras 1
+            // objC2D.fillRect(-4,-8,14,4)
+            objC2D.fillRect(6,-4,9,4)
+            objC2D.fillRect(10,0,9,4)
+
+            // Bras 2
+            objC2D.fillRect(-10,1,13,4)
+            objC2D.fillRect(-10,-3,4,4)
+            
+            // Corps
+            objC2D.fillRect(-2,-8,9,20)
+
+            // Jambe 1
+            objC2D.fillRect(4,10,5,5)
+            objC2D.fillRect(7,13,5,5)
+            objC2D.fillRect(8,16,7,7)
+
+            // Jambe 2 
+            objC2D.fillRect(-4,10,5,5)
+            objC2D.fillRect(-8,13,7,7)            
+        }
     }
     else{
         // Position Idle
