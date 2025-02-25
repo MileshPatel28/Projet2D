@@ -322,7 +322,7 @@ function mettreAjourAnimation() {
     if(!objControlleurJeu.jeuPause){
         miseAJourStatistique();
 
-        deplacerGardes();
+        //deplacerGardes();
         miseAJourJoueur();
     }
 
