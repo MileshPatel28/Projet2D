@@ -688,6 +688,7 @@ function joueurProchaineNiveau(){
 
     if(objJoueur.positionY <= -objJoueur.hauteur){
         objControlleurJeu.binProchaineNiveau = false;
+        objJoueur.binGrimpeEchelle = false;
         objStatJeu.intNiveau++;
 
         objJoueur.positionX = objCanvas.width/2; 
@@ -1159,7 +1160,7 @@ function dessinerJoueur(frame, couleurCorps) {
         }
     }
     else{
-        // Position Marche 3
+        // Position Marche 3 (pour idle)
         objC2D.fillRect(-largeurTete/2,-hauteurTete/2 - objJoueur.hauteur/4,largeurTete + 2,hauteurTete)
             
         // Bras 1
