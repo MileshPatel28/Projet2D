@@ -1002,9 +1002,6 @@ function dessinerMurs() {
 function dessinerJoueur(frame, couleurCorps) {
     objC2D.save();
 
-    let centreJoueurDessinX = 10;
-    let centreJoueurDessinY = 8;
-
     let x = objJoueur.positionX;
     let y = objJoueur.positionY;
 
