@@ -274,7 +274,7 @@ function initJoueur() {
     objJoueur.vitesseX = 4;
     objJoueur.direction = 0;
 
-    objJoueur.binTomber = true;
+    objJoueur.binTomber = false;
     objJoueur.tuileActive = {};
 
     objJoueur.tuileEntourage = []
@@ -1009,6 +1009,9 @@ function dessinerJoueur(frame, couleurCorps) {
 
     objC2D.translate(x-25,y-25)
 
+    if(objJoueur.binTomber && objJoueur.compteurFrame % 15 <= 7){
+        objC2D.scale(-1,1)
+    }
     if(objJoueur.direction == 1){
         objC2D.scale(-1,1)
     }
@@ -1027,8 +1030,29 @@ function dessinerJoueur(frame, couleurCorps) {
 
     objC2D.fillStyle = 'white'
 
+
     
     if(false); // POur debug
+    else if(objJoueur.binTomber){
+        // Dessiner le tomber du personnage
+        objC2D.fillRect(-largeurTete/2,-hauteurTete/2 - objJoueur.hauteur/4,largeurTete + 2,hauteurTete)
+                        
+        // Bras Droite
+        objC2D.fillRect(6,-8,7,4)
+        objC2D.fillRect(11,-16,7,9)
+        // objC2D.fillRect(10,0,9,4)
+
+        // Bras Gauche
+        objC2D.fillRect(-10,-8,13,4)
+        objC2D.fillRect(-16,-16,7,9)
+                
+        // Corps
+        objC2D.fillRect(0,-8,7,25)
+
+        // Jambe 2 
+        objC2D.fillRect(-10,2,10,3)
+        objC2D.fillRect(-12,5,6,8) 
+    }
     else if(objControlleurJeu.cleGauche || objControlleurJeu.cleDroit){
         if(objJoueur.compteurFrame % 30 <= 10){
 
@@ -1131,13 +1155,6 @@ function dessinerJoueur(frame, couleurCorps) {
         objC2D.fillRect(-8,15,7,12) 
         
 
-        // // Position Idle
-        // objC2D.fillRect(-largeurTete/2,-hauteurTete/2 - objJoueur.hauteur/4,largeurTete,hauteurTete)
-        // objC2D.fillRect(-4,-6,8,16)
-        // objC2D.fillRect(-8,-2,4,14)
-        // objC2D.fillRect(4,-2,4,14)
-        // objC2D.fillRect(-4,10,4,14)
-        // objC2D.fillRect(0,10,4,14)
     }
 
     // Définitiion de la couleur de la tenue du personnage
