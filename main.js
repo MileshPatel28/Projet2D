@@ -1025,18 +1025,77 @@ function dessinerJoueur(frame, couleurCorps) {
     let largeurTete = 10;
     let hauteurTete = 9;
 
-    // objC2D.fillStyle = 'pink'
-    // objC2D.beginPath();
-    // objC2D.arc(0,0,5,0,2*Math.PI,false)
-    // objC2D.fill();
-
-
 
     objC2D.fillStyle = 'white'
+    
+
+
+    // objC2D.strokeStyle = 'rgb(255, 0, 255)'
+    // objC2D.beginPath();
+    // objC2D.moveTo(-30,17)
+    // objC2D.lineTo(30,17)
+    // objC2D.stroke();
 
 
     
     if(false); // POur debug
+    else if(objJoueur.tuileActive.type == 'F'){
+        if(objJoueur.positionX % 90 <= 30){
+            // Premier frame 
+            largeurTete = 6
+            hauteurTete = 12
+            objC2D.fillRect(-largeurTete/2,-hauteurTete/2 - objJoueur.hauteur/4 + 1,largeurTete + 2,hauteurTete)
+                                                            
+            // Bras Droite
+            objC2D.fillRect(-12,-11,9,4)
+            objC2D.fillRect(-15,-22,7,11)
+                                    
+            // Bras Gauche
+            objC2D.fillRect(9,-8,7,4)
+            objC2D.fillRect(13,-21,7,14)
+                                                    
+            // Corps
+            objC2D.fillRect(1,-8,8,12)
+                                    
+            // Jambe 1
+            objC2D.fillRect(1,4,4,9)
+            objC2D.fillRect(5,9,6,4)
+            objC2D.fillRect(8,12,7,4)
+                                    
+            // Jambe Gauche
+            objC2D.fillRect(8,0,10,4)
+            objC2D.fillRect(15,4,8,8)
+            objC2D.fillRect(19,4,4,12)
+        }
+        else{
+            if(objJoueur.positionX % 90 >= 60){
+                objC2D.scale(-1,1)
+            }
+
+            // Deuxieme et troisieme frame 
+            largeurTete = 6
+            hauteurTete = 7
+            objC2D.fillRect(-largeurTete/2,-hauteurTete/2 - objJoueur.hauteur/4 + 1,largeurTete + 2,hauteurTete)
+                                
+            // Bras Droite
+            objC2D.fillRect(3,-10,7,4)
+            objC2D.fillRect(5,-19,8,9)
+
+            // Bras Gauche
+            objC2D.fillRect(-10,-8,13,4)
+            objC2D.fillRect(-15,-4,8,4)
+                        
+            // Corps
+            objC2D.fillRect(-3,-8,8,15)
+
+            // Jambe 1
+            objC2D.fillRect(2,7,7,10)
+
+            // Jambe 2 
+            objC2D.fillRect(-8,7,7,10)    
+        }
+        
+    }
     else if(objJoueur.binGrimpeEchelle){
         // Dessiner le grimpe echelle du personnage
         largeurTete = 6
