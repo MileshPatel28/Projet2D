@@ -264,7 +264,7 @@ function initJoueur() {
 
     objJoueur.compteurFrame = 1;
 
-    objJoueur.largeur = 50;
+    objJoueur.largeur = 40;
     objJoueur.hauteur = 50;
 
     objJoueur.positionX = objCanvas.width/2; // Changer a objCanvas.width/2
@@ -502,9 +502,7 @@ function deplacementJoueur() {
         if(objControlleurJeu.cleDroit &&
             objJoueur.positionX < objCanvas.width - objJoueur.largeur/2){
  
-             
- 
-
+            
              if( tuileDroit &&
                  tuileDroit.type == 'P' && 
                  !((objJoueur.positionX + objJoueur.largeur/2) < tuileDroit.tuileX*objCarteTuile.xLargeurTuile)
@@ -532,9 +530,10 @@ function deplacementJoueur() {
 
         
 
+
         if(objControlleurJeu.cleHaut){
             if(objJoueur.tuileActive.type == 'E' || tuileEnBas.type == 'E'){
-                if(objJoueur.tuileActive.type == 'E' || tuileEnBas.tuileY*objCarteTuile.yLargeurTuile <= objJoueur.positionY + objJoueur.hauteur/2){
+                if(objJoueur.tuileActive.type == 'E' || tuileEnBas.tuileY*objCarteTuile.yLargeurTuile + objJoueur.vitesseY < objJoueur.positionY + objJoueur.hauteur/2){
                     binDeplacementHaut = true;
                     objJoueur.binGrimpeEchelle = true;
                 }
@@ -543,6 +542,8 @@ function deplacementJoueur() {
                 }
             }
         }
+
+
 
 
         if(objControlleurJeu.cleBas){
@@ -572,9 +573,9 @@ function deplacementJoueur() {
 
                 if(
                     (tuileGauchBas.type == 'V' 
-                    || (tuileGauchBas.tuileX+1) * objCarteTuile.xLargeurTuile + objJoueur.largeur/2 < objJoueur.positionX) &&
+                    || (tuileGauchBas.tuileX+1) * objCarteTuile.xLargeurTuile < objJoueur.positionX - objJoueur.largeur/2) &&
                     (tuileDroitBas.type == 'V' 
-                    || (tuileDroitBas.tuileX) * objCarteTuile.xLargeurTuile - objJoueur.largeur/2 > objJoueur.positionX)
+                    || (tuileDroitBas.tuileX) * objCarteTuile.xLargeurTuile > objJoueur.positionX + objJoueur.largeur/2)
                 ){
                     objJoueur.positionY += 6;
                     objJoueur.binRelache = true;
@@ -609,12 +610,12 @@ function deplacementJoueur() {
     }
 
     if(objJoueur.binGrimpeEchelle){
-        objJoueur.positionX = (objJoueur.tuileActive.tuileX * objCarteTuile.xLargeurTuile + objJoueur.largeur/2)
+        objJoueur.positionX = (objJoueur.tuileActive.tuileX * objCarteTuile.xLargeurTuile + objCarteTuile.xLargeurTuile/2)
     }
     
 }
 
-// A programmer
+
 function graviteJoueur() {
 
     let binDescend = true;
@@ -644,7 +645,7 @@ function graviteJoueur() {
 
 
     if(tuileBas.type != 'V' && tuileBas.type != 'F' && tuileBas.type != 'L'){
-        if(tuileBas.tuileY * objCarteTuile.yLargeurTuile < objJoueur.positionY + objJoueur.hauteur/2){
+        if(tuileBas.tuileY*objCarteTuile.yLargeurTuile< objJoueur.positionY + objJoueur.hauteur/2){
             binDescend = false;
         }
     }
@@ -714,7 +715,6 @@ function dessiner() {
 
     dessinerPointage();
 
-    //dessinerJoueurDebug();
     // console.log(Math.floor(objJoueur.compteurFrame/6))
     
 
@@ -1028,18 +1028,17 @@ function dessinerJoueur(frame, couleurCorps) {
 
     objC2D.fillStyle = 'white'
     
-
-
-    // objC2D.strokeStyle = 'rgb(255, 0, 255)'
-    // objC2D.beginPath();
-    // objC2D.moveTo(-30,17)
-    // objC2D.lineTo(30,17)
-    // objC2D.stroke();
+    
+    let tuileBas = objJoueur.tuileEntourage.find(
+        (tuile) => 
+            tuile.tuileX == objJoueur.tuileActive.tuileX  &&
+            tuile.tuileY == objJoueur.tuileActive.tuileY + 1
+    )
 
 
     
     if(false); // POur debug
-    else if(objJoueur.tuileActive.type == 'F'){
+    else if(objJoueur.tuileActive.type == 'F' && tuileBas.type == 'V'){
         if(objJoueur.positionX % 90 <= 30){
             // Premier frame 
             largeurTete = 6
@@ -1244,6 +1243,7 @@ function dessinerJoueur(frame, couleurCorps) {
 
     }
 
+
     // Définitiion de la couleur de la tenue du personnage
     // objC2D.fillStyle = couleurCorps || "red";
 
@@ -1262,71 +1262,11 @@ function dessinerJoueur(frame, couleurCorps) {
     // objC2D.fillStyle = "cyan";
     // objC2D.fillRect( -2, -18, 4, 4);
 
-    // Idée pour les maths des james et ou bras
-    /**
-     *  Les jambes peuts être comme cela (séparé par les frames et $ represente le corps)
-     *  (H = membre haut) (B = membre bas)
-     * 
-     *   $$$ |   $$$ | $$$ | $$$
-     *   $$$ |   $$$ | $$$ | $$$
-     *   $$$ |   $$$ | $$$ | $$$
-     *  H    |   H   |  H  |   H
-     * B     |  B    |   B |    B
-     * 
-     *  Par exemple, on multiplie le nombre du compteurFrame avec un nombre arbritaire pour determiner les positions
-     *  Peut être utilisé un fonction comme sin(Math.PI*x/60) pour avoir un aller retour sur 2 seconds
-     *  ou f(x)=\sin(\pi*(6*\operatorname{floor}(x/6))/60)
-     */
+     
 
 
 
     if (true) {
-        let mouvement = frame % 4;
-
-        
-
-
-        // let pourcentageChangement = Math.sin(Math.PI*(10*Math.floor(objJoueur.compteurFrame/10))/60)
-
-        // let jambeGaucheX1 = Math.floor(-3.5*pourcentageChangement -3.5) +2;
-        // let jambeGaucheY1 = 8;
-
-        // let jambeGaucheX2 = Math.floor(-5*pourcentageChangement -3) +2
-        // let jambeGaucheY2 = 17
-
-        // let jambeDroiteX1 = Math.floor(-3.5*-pourcentageChangement -3.5) +2;
-        // let jambeDroiteY1 = 8;
-
-        // let jambeDroiteX2 = Math.floor(-5*-pourcentageChangement -3) +2;
-        // let jambeDroiteY2 = 17;
-
-
-        // let brasGaucheX1 = Math.floor(-6.5*pourcentageChangement - 4) + 1;
-        // let brasGaucheY1 = -5;
-
-        // let brasGaucheX2 = Math.floor(-7.5*pourcentageChangement - 4) + 1;
-        // let brasGaucheY2 = 0;
-
-        // let brasDroiteX1 = Math.floor(-6.5*-pourcentageChangement - 4) + 1;
-        // let brasDroiteY1 = -5;
-
-        // let brasDroiteX2 = Math.floor(-7.5*-pourcentageChangement - 4) + 1;
-        // let brasDroiteY2 = 0;
-
-        // objC2D.fillStyle = 'white'
-        // objC2D.fillRect(jambeGaucheX1, jambeGaucheY1, 5, 10);
-        // objC2D.fillRect(jambeGaucheX2,jambeGaucheY2,5,5)
-
-        // objC2D.fillRect(jambeDroiteX1,jambeDroiteY1,5,10);
-        // objC2D.fillRect(jambeDroiteX2,jambeDroiteY2,5,5);
-
-
-        // objC2D.fillRect(brasGaucheX1,brasGaucheY1,5,6)
-        // objC2D.fillRect(brasGaucheX2,brasGaucheY2,5,6)
-        
-        // objC2D.fillRect(brasDroiteX1,brasDroiteY1,5,6)
-        // objC2D.fillRect(brasDroiteX2,brasDroiteY2,5,6)
-
 
         // // Animation des jambes
         // let jambeGaucheX = mouvement < 2 ?  4 :  6;
@@ -1361,18 +1301,6 @@ function dessinerJoueur(frame, couleurCorps) {
         objC2D.fillRect( 2, 10, 5, 6); // Bras gauche
         objC2D.fillRect( 13, 10, 5, 6); // Bras droit
     }
-
-    // Debug
-    // objC2D.strokeStyle = 'pink'
-    // objC2D.beginPath();
-    // objC2D.moveTo(0,-objCanvas.height)
-    // objC2D.lineTo(0,objCanvas.height)
-    // objC2D.stroke();
-
-    // objC2D.fillStyle = 'pink'
-    // objC2D.beginPath();
-    // objC2D.arc(0, 0, 5, 0, 2 * Math.PI);
-    // objC2D.fill();
 
 
     objC2D.restore();
