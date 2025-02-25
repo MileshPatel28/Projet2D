@@ -1401,6 +1401,7 @@ function randInt(min, max) {
 
 var objGardes = [];
 
+/*
 function initGardes(nombreGardes) {
     objGardes = [];
     let couleursGardes = ["red", "green", "purple"]; // Couleurs des chandails des gardes
@@ -1582,6 +1583,4 @@ function dessinerJoueurDebug() {
     objC2D.restore();
 }
 
-
-
-
+*/
