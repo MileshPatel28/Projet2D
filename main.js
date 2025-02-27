@@ -268,8 +268,8 @@ function initJoueur() {
     objJoueur.largeur = 40;
     objJoueur.hauteur = 50;
 
-    objJoueur.positionX = objCanvas.width/2; // Changer a objCanvas.width/2
-    objJoueur.positionY = 775; //775
+    objJoueur.positionX = 23*objCarteTuile.xLargeurTuile; // Changer a objCanvas.width/2
+    objJoueur.positionY = 13*objCarteTuile.yLargeurTuile; //775
 
     objJoueur.vitesseX = 3;
     objJoueur.vitesseY = 2;
@@ -504,8 +504,6 @@ function deplacementJoueur() {
         if(objControlleurJeu.cleGauche &&
            objJoueur.positionX > objJoueur.largeur + 25){
 
-            
-
             if( tuileGauche && 
                 tuileGauche.type == 'P' && 
                 !((objJoueur.positionX - objJoueur.largeur/2) > (tuileGauche.tuileX+1)*objCarteTuile.xLargeurTuile)
@@ -637,8 +635,11 @@ function deplacementJoueur() {
         objJoueur.positionX += objJoueur.vitesseX;
     }
 
-    if(objJoueur.binGrimpeEchelle){
+    if(objJoueur.binGrimpeEchelle && !binDeplacementGauche && !binDeplacementDroite){
         objJoueur.positionX = (objJoueur.tuileActive.tuileX * objCarteTuile.xLargeurTuile + objCarteTuile.xLargeurTuile/2)
+    }
+    else{
+        objJoueur.binGrimpeEchelle = false;
     }
     
 }
@@ -770,7 +771,7 @@ function deplacerGarde(garde){
     let xButChangementNiveau = 0;
 
 
-    // Cette partie calcule la tuile de se d
+    // Cette partie calcule la tuile de se déplacer
     let tuileBas = garde.tuileEntourage.find(
         (tuile) => 
             tuile.tuileX == garde.tuileActive.tuileX  &&
@@ -787,58 +788,65 @@ function deplacerGarde(garde){
     let tuileBut = null;
     let distancePlusProcheTuile = Number.MAX_SAFE_INTEGER;
     
-
-    objCarteTuile.tabTuile.forEach((tuile) => {
-        if(distanceJoueurY > 0){
-            if( tuile.tuileY == (tuileBas.tuileY) && 
-                (tuile.type == 'E' || tuile.type == 'V')){
-
-                let tuilePositionX = tuile.tuileX * objCarteTuile.xLargeurTuile + objCarteTuile.xLargeurTuile/2;
-                let tuilePositionY = tuile.tuileY * objCarteTuile.yLargeurTuile + objCarteTuile.yLargeurTuile/2;
-                
-                let distanceTuileGarde = Math.sqrt(
-                    Math.pow(garde.positionX - tuilePositionX,2) + Math.pow(garde.positionY - tuilePositionY,2)
-                )
-
-                if(distanceTuileGarde <= distancePlusProcheTuile){
-                    distancePlusProcheTuile = distanceTuileGarde;
+    if(Math.abs(distanceJoueurY) >= 5){
+        objCarteTuile.tabTuile.forEach((tuile) => {
+            let binTuileBut = false;
+    
+            if(distanceJoueurY > 0){
+                if( tuile.tuileY == (tuileBas.tuileY) && 
+                    (tuile.type == 'E' || tuile.type == 'V')){
+    
                     tuileBut = tuile;
+                    
                 }
             }
-        }
-        else if(distanceJoueurY <= 0){
-            if(tuile.tuileY == tuileHaut.tuileY && tuile.type == 'E'){
-                console.log('sigma')
-                let tuilePositionX = tuile.tuileX * objCarteTuile.xLargeurTuile + objCarteTuile.xLargeurTuile/2;
-                let tuilePositionY = tuile.tuileY * objCarteTuile.yLargeurTuile + objCarteTuile.yLargeurTuile/2;
-
-                let distanceTuileGarde = Math.sqrt(
-                    Math.pow(garde.positionX - tuilePositionX,2) + Math.pow(garde.positionY - tuilePositionY,2)
-                )
-
-                if(distanceTuileGarde <= distancePlusProcheTuile){
-                    distancePlusProcheTuile = distanceTuileGarde;
-                    tuileBut = tuile;
+            else if(distanceJoueurY <= 0){
+                if(tuile.tuileY == tuileHaut.tuileY && tuile.type == 'E'){
+    
+                    binTuileBut = true;
                 }
             }
-        }
-    })
+    
+    
+    
+            // objCarteTuile.tabTuile.forEach((tuileJoueur) => {
+            //     if( tuileJoueur.tuileX != tuile.tuileX || 
+            //         objJoueur.tuileActive.tuileY == tuile.tuileY ||
+            //         tuileJoueur.type != 'V'){
+            //         binTuileBut = false;
+            //     }
+            // })
+    
+            let tuilePositionX = tuile.tuileX * objCarteTuile.xLargeurTuile + objCarteTuile.xLargeurTuile/2;
+            let tuilePositionY = tuile.tuileY * objCarteTuile.yLargeurTuile + objCarteTuile.yLargeurTuile/2;
+    
+            let distanceTuileGarde = Math.sqrt(
+                Math.pow(garde.positionX - tuilePositionX,2) + Math.pow(garde.positionY - tuilePositionY,2)
+            )
+    
+            if(binTuileBut && distanceTuileGarde <= distancePlusProcheTuile){
+                distancePlusProcheTuile = distanceTuileGarde;
+                tuileBut = tuile;
+            }
+        })
+    }
 
     let positionTuileX = -1;
 
     if(tuileBut){
         positionTuileX = tuileBut.tuileX * objCarteTuile.xLargeurTuile + objCarteTuile.xLargeurTuile/2;
         directionGardeXPrefere = (positionTuileX < garde.positionX) ? -1 : 1;
-        console.log(tuileBut)
     }
 
 
     if(!garde.binTomber){
 
         if(Math.abs(distanceJoueurY) >= 5){
-            if(Math.abs(positionTuileX - garde.positionX) > 5
-                && tuileBas.type == 'P' && garde.positionY + objGardes.hauteur/2 >= tuileBas.tuileY*objCarteTuile.yLargeurTuile 
+            
+            if(Math.abs(positionTuileX - garde.positionX) >= 5
+                && tuileBas.type != 'V' && garde.positionY + objGardes.hauteur/2 >= tuileBas.tuileY*objCarteTuile.yLargeurTuile 
             ){
+                
                 if(directionGardeXPrefere == -1){
                     binDeplacementGauche = true;
                 }
@@ -853,14 +861,14 @@ function deplacerGarde(garde){
                     binDeplacementBas = true;
                 }
                 else{
-                    binDeplacementHaut = true;
+                    binDeplacementHaut = true;    
                 }
                 
             }
 
             
         }
-        else{
+        else{        
             if(Math.abs(distanceJoueurX) >= 5){
                 if(directionGardeXPrefere == -1){
                     binDeplacementGauche = true;
@@ -869,6 +877,7 @@ function deplacerGarde(garde){
                     binDeplacementDroite = true;
                 }
             }
+
         }
 
         // if(Math.abs(distanceJoueurY) >= 5){
@@ -887,7 +896,7 @@ function deplacerGarde(garde){
         
     }
     else{
-
+        console.log('joueur tombe pas de contrôle')
     }
 
 
@@ -901,22 +910,17 @@ function deplacerGarde(garde){
     // Determine si les gardes sont sur l'echelle
     garde.binGrimpeEchelle = false;
 
-    if(garde.tuileActive.type == 'E' || tuileBas.type == 'E')
-        if(tuileBas.type == 'E' || tuileBas.tuileY*objCarteTuile.yLargeurTuile > garde.positionY + objGardes.hauteur/2){
+    if(binDeplacementBas && (garde.tuileActive.type == 'E' || tuileBas.type == 'E'))
+        if(tuileBas.type == 'E' || tuileBas.tuileY*objCarteTuile.yLargeurTuile >= garde.positionY + objGardes.hauteur/2){
             garde.binGrimpeEchelle = true;
         }{
     }
-    
-    // if(garde.tuileActive.type == 'E' || tuileBas.type == 'E'){
-    //     if(garde.tuileActive.type == 'E' || tuileBas.tuileY*objCarteTuile.yLargeurTuile + objGardes.vitesseY < garde.positionY + objGardes.hauteur/2){
-    //         garde.binGrimpeEchelle = true;
-    //     }
-    //     else{
-    //         garde.binGrimpeEchelle = false;
-    //     }
-    // }
 
-    console.log(garde.binGrimpeEchelle)
+
+    if(binDeplacementHaut && garde.tuileActive.type == 'E'){
+        garde.binGrimpeEchelle = true;
+    }
+    
 
     if(binDeplacementGauche){
         garde.positionX -= objGardes.vitesseX;
@@ -987,7 +991,7 @@ function graviteGardes(garde){
 
     garde.binTomber = binDescend;
 
-    if(binDescend && !garde.binGrimpeEchelle){
+    if(binDescend){
         garde.positionY += objGardes.vitesseY
         garde.binRelache = true;
     }
