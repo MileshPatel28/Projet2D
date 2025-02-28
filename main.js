@@ -759,7 +759,11 @@ function miseAJourGardes(){
 
 }
 
-
+/**
+ * 
+ * Problème avec le tuile de but pour le garde
+ *  De plus si joueur va en haut le garde ne peut plus le target
+ */
 
 function deplacerGarde(garde){
     let binDeplacementGauche = false;
@@ -773,7 +777,7 @@ function deplacerGarde(garde){
     let directionGardeXPrefere = (distanceJoueurX >= 0) ? 1 : -1;
     let directionGardeYPrefere = (distanceJoueurY > 0) ? 1 : -1;
 
-    let xButChangementNiveau = 0;
+    
 
 
     // Cette partie calcule la tuile de se déplacer
@@ -792,25 +796,27 @@ function deplacerGarde(garde){
 
     let tuileBut = null;
     let distancePlusProcheTuile = Number.MAX_SAFE_INTEGER;
+
+    let ifEntrer = 0;
     
-    if(Math.abs(distanceJoueurY) >= 5){
+    if(Math.abs(distanceJoueurY) >= 1){
         objCarteTuile.tabTuile.forEach((tuile) => {
             let binTuileBut = false;
     
             if(distanceJoueurY > 0){
                 if( tuile.tuileY == (tuileBas.tuileY) && 
                     (tuile.type == 'E' || tuile.type == 'V')){
-    
                     tuileBut = tuile;
                     
                 }
             }
             else if(distanceJoueurY < 0){
                 if(tuile.tuileY == garde.tuileActive.tuileY && tuile.type == 'E'){
-    
+                    ifEntrer = 1;
                     binTuileBut = true;
                 }
-                else if(tuile.type == 'V'){
+                else if(tuile.tuileY == garde.tuileActive.tuileY && tuile.type == 'V'){
+                    ifEntrer = 2;
                     objCarteTuile.tabTuile.forEach((tuileEchellePotentielle) => {
                         if( tuileEchellePotentielle.type == 'E' &&
                             tuileEchellePotentielle.tuileX == tuile.tuileX &&
@@ -823,7 +829,7 @@ function deplacerGarde(garde){
             }
     
     
-
+            
 
             let tuilePositionX = tuile.tuileX * objCarteTuile.xLargeurTuile + objCarteTuile.xLargeurTuile/2;
             let tuilePositionY = tuile.tuileY * objCarteTuile.yLargeurTuile + objCarteTuile.yLargeurTuile/2;
@@ -838,6 +844,9 @@ function deplacerGarde(garde){
             }
         })
     }
+            
+    
+    console.log(tuileBut + "  " + ifEntrer)
 
     let binButHaut = false;
     let positionTuileX = -1;
@@ -851,8 +860,13 @@ function deplacerGarde(garde){
 
     
     if(!garde.binTomber){
+        
+        if( tuileBut /*&&
+            !(objJoueur.positionY - objJoueur.hauteur >= garde.positionY - objGardes.hauteur/2 &&
+              objJoueur.positionY - objJoueur.hauteur <= garde.positionY + objGardes.hauteur/2  
+            )*/
+        ){
 
-        if(tuileBut){
             if( Math.abs(positionTuileX - garde.positionX) >= 5){
                 if(directionGardeXPrefere == -1){
                     binDeplacementGauche = true;
@@ -1605,6 +1619,13 @@ function dessinerGardes(){
             objGardes.largeur,
             objGardes.hauteur
         )
+
+        objC2D.fillStyle = 'rgb(0, 0, 0)'
+        objC2D.beginPath()
+        objC2D.arc(0,0,5,0,2*Math.PI,false);
+        objC2D.fill();
+
+
         objC2D.restore();
     })
 
