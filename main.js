@@ -232,11 +232,10 @@ function initCarteTuile(){
                 
             }
 
-            if(y >= 29){
-                tuileInsere.type = ''
+            if(x <= 28){
+                objCarteTuile.tabTuile.push(tuileInsere)
             }
-
-            objCarteTuile.tabTuile.push(tuileInsere)
+            
         }
     }
 
@@ -760,6 +759,8 @@ function miseAJourGardes(){
 
 }
 
+
+
 function deplacerGarde(garde){
     let binDeplacementGauche = false;
     let binDeplacementDroite = false;
@@ -848,7 +849,6 @@ function deplacerGarde(garde){
     }
 
 
-    console.log(tuileBut)
     
     if(!garde.binTomber){
 
@@ -880,49 +880,6 @@ function deplacerGarde(garde){
                 }
             }
         }
-
-
-        /*
-        if(Math.abs(distanceJoueurY) >= 5){
-            
-            if( Math.abs(positionTuileX - garde.positionX) >= 5 &&
-                Math.abs(distanceJoueurY) >= 5
-                //&& tuileBas.type != 'V' && garde.positionY + objGardes.hauteur/2 >= tuileBas.tuileY*objCarteTuile.yLargeurTuile 
-            ){
-                
-                if(directionGardeXPrefere == -1){
-                    binDeplacementGauche = true;
-                }
-                else if(directionGardeXPrefere == 1){
-                    binDeplacementDroite = true;
-                }
-            }
-            else{
-                garde.positionX = garde.tuileActive.tuileX*objCarteTuile.xLargeurTuile + objCarteTuile.xLargeurTuile/2
-
-                if(distanceJoueurY > 0){
-                    binDeplacementBas = true;
-                }
-                else{
-                    binDeplacementHaut = true;    
-                }
-                
-            }
-
-            
-        }
-        else{        
-            if(Math.abs(distanceJoueurX) >= 5){
-                if(directionGardeXPrefere == -1){
-                    binDeplacementGauche = true;
-                }
-                else if(directionGardeXPrefere == 1){
-                    binDeplacementDroite = true;
-                }
-            }
-
-        }
-        */
         
     }
     else{
