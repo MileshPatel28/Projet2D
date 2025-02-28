@@ -232,6 +232,10 @@ function initCarteTuile(){
                 
             }
 
+            if(y >= 29){
+                tuileInsere.type = ''
+            }
+
             objCarteTuile.tabTuile.push(tuileInsere)
         }
     }
@@ -800,23 +804,26 @@ function deplacerGarde(garde){
                     
                 }
             }
-            else if(distanceJoueurY <= 0){
-                if(tuile.tuileY == tuileHaut.tuileY && tuile.type == 'E'){
+            else if(distanceJoueurY < 0){
+                if(tuile.tuileY == garde.tuileActive.tuileY && tuile.type == 'E'){
     
                     binTuileBut = true;
+                }
+                else if(tuile.type == 'V'){
+                    objCarteTuile.tabTuile.forEach((tuileEchellePotentielle) => {
+                        if( tuileEchellePotentielle.type == 'E' &&
+                            tuileEchellePotentielle.tuileX == tuile.tuileX &&
+                            tuileEchellePotentielle.tuileY == tuile.tuileY + 1
+                        ){
+                            binTuileBut = true;
+                        }
+                    })
                 }
             }
     
     
-    
-            // objCarteTuile.tabTuile.forEach((tuileJoueur) => {
-            //     if( tuileJoueur.tuileX != tuile.tuileX || 
-            //         objJoueur.tuileActive.tuileY == tuile.tuileY ||
-            //         tuileJoueur.type != 'V'){
-            //         binTuileBut = false;
-            //     }
-            // })
-    
+
+
             let tuilePositionX = tuile.tuileX * objCarteTuile.xLargeurTuile + objCarteTuile.xLargeurTuile/2;
             let tuilePositionY = tuile.tuileY * objCarteTuile.yLargeurTuile + objCarteTuile.yLargeurTuile/2;
     
@@ -831,20 +838,56 @@ function deplacerGarde(garde){
         })
     }
 
+    let binButHaut = false;
     let positionTuileX = -1;
 
     if(tuileBut){
         positionTuileX = tuileBut.tuileX * objCarteTuile.xLargeurTuile + objCarteTuile.xLargeurTuile/2;
         directionGardeXPrefere = (positionTuileX < garde.positionX) ? -1 : 1;
+        
     }
 
 
+    console.log(tuileBut)
+    
     if(!garde.binTomber){
 
+        if(tuileBut){
+            if( Math.abs(positionTuileX - garde.positionX) >= 5){
+                if(directionGardeXPrefere == -1){
+                    binDeplacementGauche = true;
+                }
+                else if(directionGardeXPrefere == 1){
+                    binDeplacementDroite = true;
+                }
+            }
+            else{
+                if(distanceJoueurY > 0){
+                    binDeplacementBas = true;
+                }
+                else{
+                    binDeplacementHaut = true;    
+                }
+            }
+        }
+        else{
+            if(Math.abs(distanceJoueurX) >= 5){
+                if(directionGardeXPrefere == -1){
+                    binDeplacementGauche = true;
+                }
+                else if(directionGardeXPrefere == 1){
+                    binDeplacementDroite = true;
+                }
+            }
+        }
+
+
+        /*
         if(Math.abs(distanceJoueurY) >= 5){
             
-            if(Math.abs(positionTuileX - garde.positionX) >= 5
-                && tuileBas.type != 'V' && garde.positionY + objGardes.hauteur/2 >= tuileBas.tuileY*objCarteTuile.yLargeurTuile 
+            if( Math.abs(positionTuileX - garde.positionX) >= 5 &&
+                Math.abs(distanceJoueurY) >= 5
+                //&& tuileBas.type != 'V' && garde.positionY + objGardes.hauteur/2 >= tuileBas.tuileY*objCarteTuile.yLargeurTuile 
             ){
                 
                 if(directionGardeXPrefere == -1){
@@ -879,20 +922,7 @@ function deplacerGarde(garde){
             }
 
         }
-
-        // if(Math.abs(distanceJoueurY) >= 5){
-        //     if(directionGardeYPrefere == 1){
-        //         binDeplacementBas = true;
-        //     }
-        //     else if(directionGardeYPrefere == -1){
-        //         binDeplacementHaut = true;
-        //     }
-        // }
-
-
-
-        // Les collisions
-
+        */
         
     }
     else{
