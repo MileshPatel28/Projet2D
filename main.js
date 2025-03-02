@@ -315,7 +315,7 @@ function initGardes(){
 
     let objGardeDebug = new Object();
     objGardeDebug.positionX = 20*objCarteTuile.xLargeurTuile
-    objGardeDebug.positionY = 300;
+    objGardeDebug.positionY = 14*objCarteTuile.yLargeurTuile;
 
     objGardeDebug.tuileActive = {}
     objGardeDebug.tuileEntourage = []
@@ -789,147 +789,138 @@ function deplacerGarde(garde){
     let distanceJoueurY = objJoueur.positionY - garde.positionY;
 
     let directionGardeXPrefere = (distanceJoueurX >= 0) ? 1 : -1;
-    let directionGardeYPrefere = (distanceJoueurY > 0) ? 1 : -1;
+    let directionGardeYPrefere = (distanceJoueurY >= 0) ? 1 : -1;
 
-    
-
-
-    // Cette partie calcule la tuile de se déplacer
-    let tuileBas = garde.tuileEntourage.find(
-        (tuile) => 
-            tuile.tuileX == garde.tuileActive.tuileX  &&
-            tuile.tuileY == garde.tuileActive.tuileY + 1
-    )
-
-    let tuileHaut = garde.tuileEntourage.find(
-        (tuile) => 
-            tuile.tuileX == garde.tuileActive.tuileX  &&
-            tuile.tuileY == garde.tuileActive.tuileY - 1
-    )
+    let toleranceEntreJoueur = 5;
 
 
     let tuileBut = null;
-    let distancePlusProcheTuile = Number.MAX_SAFE_INTEGER;
+    let distanceTuile = Number.MAX_SAFE_INTEGER;
 
-    let ifEntrerDEBUG = 0;
+    let ifEntrer = 0;
 
-    if(Math.abs(distanceJoueurY) >= 1){
+    if(Math.abs(distanceJoueurY) >= toleranceEntreJoueur){
         objCarteTuile.tabTuile.forEach((tuile) => {
-            let binTuileBut = false;
-    
-            if(distanceJoueurY > 0){
-                if( tuile.tuileY == (tuileBas.tuileY) && 
-                    (tuile.type == 'E' || tuile.type == 'V')){
-                    tuileBut = tuile;
-                    
-                }
-            }
-            else if(distanceJoueurY < 0){
-                if(tuile.tuileY == garde.tuileActive.tuileY && tuile.type == 'V' && tuileBas.type == 'E'){
-                    let ifEntrerDEBUG = 1;
-                    binTuileBut = true;
-                }
-                else if(tuile.tuileY == garde.tuileActive.tuileY && tuile.type == 'E'){
-                    binTuileBut = true;
-                }
-            }
-    
-    
-            
-           
+            let binTuilePossible = false;
 
-            let tuilePositionX = tuile.tuileX * objCarteTuile.xLargeurTuile + objCarteTuile.xLargeurTuile/2;
-            let tuilePositionY = tuile.tuileY * objCarteTuile.yLargeurTuile + objCarteTuile.yLargeurTuile/2;
-    
-            let distanceTuileGarde = Math.sqrt(
-                Math.pow(garde.positionX - tuilePositionX,2) + Math.pow(garde.positionY - tuilePositionY,2)
-            )
-    
-            if(binTuileBut && distanceTuileGarde <= distancePlusProcheTuile){
-                distancePlusProcheTuile = distanceTuileGarde;
-                tuileBut = tuile;
+            if(directionGardeYPrefere == 1){
+                if(tuile.type == 'V' && tuile.tuileY == garde.tuileActive.tuileY){
+                    objCarteTuile.tabTuile.forEach((tuileEchelle) => {
+                        if( tuileEchelle.type == 'E' && 
+                            tuileEchelle.tuileY == tuile.tuileY + 1 &&
+                            tuileEchelle.tuileX == tuile.tuileX
+                        ){
+                            binTuilePossible = true;
+                            ifEntrer = 1;
+                        }
+                    })
+                }
+                else if(tuile.type == 'E' && tuile.tuileY == garde.tuileActive.tuileY){
+                    objCarteTuile.tabTuile.forEach((tuileBas) => {
+                        if( tuileBas.type == 'E' && 
+                            tuileBas.tuileY == tuile.tuileY + 1 &&
+                            tuileBas.tuileX == tuile.tuileX
+                        ){
+                            // binTuilePossible = true;
+                            // ifEntrer = 2;
+                        }
+                    })
+
+                    binTuilePossible = true;
+                    ifEntrer = 2;
+                }
+            }
+            else if(directionGardeYPrefere == -1){
+                if(tuile.type == 'E' && tuile.tuileY == garde.tuileActive.tuileY){
+                    objCarteTuile.tabTuile.forEach((tuileHaut) => {
+                        if( (tuileHaut.type == 'E' || tuileHaut.type == 'V') && 
+                            tuileHaut.tuileY == tuile.tuileY - 1 &&
+                            tuileHaut.tuileX == tuile.tuileX
+                        ){
+                            binTuilePossible = true;
+                        }
+                    })
+                }
+            }
+
+            if(binTuilePossible){
+                let distanceTuileCourant = Math.sqrt(
+                    Math.pow(garde.positionX - (tuile.tuileX*objCarteTuile.xLargeurTuile + objCarteTuile.xLargeurTuile/2),2) +
+                    Math.pow(garde.positionY - (tuile.tuileY*objCarteTuile.yLargeurTuile + objCarteTuile.yLargeurTuile/2),2)
+                )
+
+
+                if(distanceTuileCourant < distanceTuile){
+                    distanceTuile = distanceTuileCourant;
+                    tuileBut = tuile;
+                }
             }
         })
     }
-            
-    
-    console.log(tuileBut)
 
-    let binButHaut = false;
-    let positionTuileX = -1;
+    console.log(JSON.stringify(tuileBut) + " ifEntrer=" + ifEntrer)
+    // console.log(garde.tuileActive)
 
-    if(tuileBut){ 
-        positionTuileX = tuileBut.tuileX * objCarteTuile.xLargeurTuile + objCarteTuile.xLargeurTuile/2;
-        directionGardeXPrefere = (positionTuileX < garde.positionX) ? -1 : 1;
-        
-    }
-
-
-    
     if(!garde.binTomber){
-        
-        if( tuileBut /*&&
-            !(objJoueur.positionY - objJoueur.hauteur >= garde.positionY - objGardes.hauteur/2 &&
-              objJoueur.positionY - objJoueur.hauteur <= garde.positionY + objGardes.hauteur/2  
-            )*/
-        ){
+        if(tuileBut){
+                let distanceTuileBut = (tuileBut.tuileX*objCarteTuile.xLargeurTuile + objCarteTuile.xLargeurTuile/2) - garde.positionX
+                directionGardeXPrefere = (distanceTuileBut >= 0) ? 1 : -1;
 
-            if( Math.abs(positionTuileX - garde.positionX) >= 5){
-                if(directionGardeXPrefere == -1){
-                    binDeplacementGauche = true;
-                }
-                else if(directionGardeXPrefere == 1){
-                    binDeplacementDroite = true;
-                }
-            }
-            else{
-                if(distanceJoueurY > 0){
-                    binDeplacementBas = true;
+                if( Math.abs(distanceTuileBut) >= 5 && 
+                    (((tuileBut.tuileY+1)*objCarteTuile.yLargeurTuile >= garde.positionY + objGardes.hauteur/2 - objGardes.vitesseY &&
+                    directionGardeYPrefere == -1) /*||
+                    (tuileBut.tuileY*objCarteTuile.yLargeurTuile <= garde.positionX - objGardes.hauteur/2 + objGardes.vitesseY &&
+                    directionGardeYPrefere == 1
+                    )*/)
+                ){
+                    if(directionGardeXPrefere == 1){
+                        binDeplacementDroite = true;
+                    }
+                    else if(directionGardeXPrefere == -1){
+                        binDeplacementGauche = true;
+                    }
                 }
                 else{
-                    binDeplacementHaut = true;    
+                    if(directionGardeYPrefere == 1){
+                        binDeplacementBas = true;
+                    }
+                    else if(directionGardeYPrefere == -1){
+                        binDeplacementHaut = true;
+                    }
                 }
-            }
         }
         else{
-            if(Math.abs(distanceJoueurX) >= 5){
-                if(directionGardeXPrefere == -1){
-                    binDeplacementGauche = true;
-                }
-                else if(directionGardeXPrefere == 1){
-                    binDeplacementDroite = true;
-                }
+            if(directionGardeXPrefere == 1){
+                binDeplacementDroite = true;
+            }
+            else if(directionGardeXPrefere == -1){
+                binDeplacementGauche = true;
             }
         }
-        
-    }
-    else{
-        console.log('joueur tombe pas de contrôle')
     }
 
 
-    // Determiner si le garde est sur le plancher
-    if(tuileBas.type == 'P' && garde.positionY + objGardes.hauteur/2 >= tuileBas.tuileY*objCarteTuile.yLargeurTuile){
-        binDeplacementBas = false;
-    }
+    let tuileEnBas = garde.tuileEntourage.find(
+        (tuile) => 
+            tuile.tuileX == garde.tuileActive.tuileX &&
+            tuile.tuileY == garde.tuileActive.tuileY + 1
+    )
 
-    
-
-    // Determine si les gardes sont sur l'echelle
     garde.binGrimpeEchelle = false;
-
-    if(binDeplacementBas && (garde.tuileActive.type == 'E' || tuileBas.type == 'E'))
-        if(tuileBas.type == 'E' || tuileBas.tuileY*objCarteTuile.yLargeurTuile >= garde.positionY + objGardes.hauteur/2){
+    if(garde.tuileActive.type == 'E' || tuileEnBas.type == 'E'){
+        if(garde.tuileActive.type == 'E' || tuileEnBas.tuileY*objCarteTuile.yLargeurTuile + objGardes.vitesseY < garde.positionY + objGardes.hauteur/2){
             garde.binGrimpeEchelle = true;
-        }{
+        }
+        else{
+            garde.binGrimpeEchelle = false;
+        }
     }
 
-    if(binDeplacementHaut && garde.tuileActive.type == 'E'){
-        garde.binGrimpeEchelle = true;
-    }
-
+    // Collisions horizontale
 
     
+
+
 
     if(binDeplacementGauche){
         garde.positionX -= objGardes.vitesseX;
@@ -972,12 +963,12 @@ function graviteGardes(garde){
     )
 
 
-    if(tuileBas.type != 'V' && tuileBas.type != 'F' && tuileBas.type != 'L'){
+    if(tuileBas.type == 'P' || tuileBas.type == 'B'){
         if(tuileBas.tuileY*objCarteTuile.yLargeurTuile< garde.positionY + objGardes.hauteur/2){
             binDescend = false;
         }
     }
-    else if(tuileBas.type == 'V'){
+    else if(!(tuileBas.type == 'P' || tuileBas.type == 'B')){
         if( tuileGauchBas.type != 'V' && 
             (tuileGauchBas.tuileX + 1 ) * objCarteTuile.xLargeurTuile > garde.positionX - objGardes.largeur/2
         ){
