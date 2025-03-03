@@ -321,6 +321,7 @@ function initGardes(){
 
     objGardeDebug.tuileActive = {}
     objGardeDebug.tuileEntourage = []
+    objGardeDebug.tempsTrou = -1;
 
     objGardeDebug.binGrimpeEchelle = false;
     objGardeDebug.binRelache = false;
@@ -768,14 +769,44 @@ function miseAJourGardes(){
             )
         }
 
+        let tuileEnBas = garde.tuileEntourage.find(
+            (tuile) => 
+                tuile.tuileX == garde.tuileActive.tuileX &&
+                tuile.tuileY == garde.tuileActive.tuileY + 1
+        )
+
 
         // Faire le garde tomber dans le trou
-        if( garde.tuileActive.type == 'T' && 
-            garde.positionY - objGardes.hauteur/2 + objGardes.vitesseY >= garde.tuileActive.tuileY*objCarteTuile.yLargeurTuile
+        if(garde.tempsTrou >= 60*4 ){
+            garde.tempsTrou++;
+            garde.binTomber = false;
+
+            let xDeplacementGarde = (objJoueur.positionX - garde.positionX >= 0) ? 1 : -1;
+            
+            if(garde.tuileActive.type == 'T' || 
+                (garde.tuileActive.tuileY+1)*objCarteTuile.yLargeurTuile <= garde.positionY + objGardes.hauteur/2
+            ){
+                garde.positionY -= objGardes.vitesseY
+            }
+            else{
+                garde.positionX += xDeplacementGarde*objGardes.vitesseX;
+            }
+
+            if(tuileEnBas.type != 'T' && garde.tuileActive.type != 'T'){
+                garde.tempsTrou = -1;
+            }
+
+            garde.direction = xDeplacementGarde;
+        }
+        else if( garde.tuileActive.type == 'T' && 
+            garde.positionY - objGardes.hauteur/2 + objGardes.vitesseY >= garde.tuileActive.tuileY*objCarteTuile.yLargeurTuile &&
+            garde.tempsTrou <= 60*4
         ){
+            garde.tempsTrou++;
             garde.binTomber = true;
             garde.positionX = garde.tuileActive.tuileX*objCarteTuile.xLargeurTuile + objCarteTuile.xLargeurTuile/2;
             garde.positionY = garde.tuileActive.tuileY*objCarteTuile.yLargeurTuile + objCarteTuile.yLargeurTuile/2;
+            
         }
         else{
             deplacerGarde(garde);
@@ -868,6 +899,12 @@ function deplacerGarde(garde){
     console.log(JSON.stringify(tuileBut))
     // console.log(garde.tuileActive)
 
+    let tuileEnBas = garde.tuileEntourage.find(
+        (tuile) => 
+            tuile.tuileX == garde.tuileActive.tuileX &&
+            tuile.tuileY == garde.tuileActive.tuileY + 1
+    )
+
     if(!garde.binTomber){
         if(tuileBut){
                 let distanceTuileBut = (tuileBut.tuileX*objCarteTuile.xLargeurTuile + objCarteTuile.xLargeurTuile/2) - garde.positionX
@@ -897,25 +934,33 @@ function deplacerGarde(garde){
                 }
         }
         else{
-            if(directionGardeXPrefere == 1){
-                binDeplacementDroite = true;
+            if(tuileEnBas.type == 'E' || 
+                tuileEnBas.tuileY*objCarteTuile.yLargeurTuile + objGardes.vitesseY >= garde.positionY + objGardes.hauteur/2){
+                if(directionGardeXPrefere == 1){
+                    binDeplacementDroite = true;
+                }
+                else if(directionGardeXPrefere == -1){
+                    binDeplacementGauche = true;
+                }
             }
-            else if(directionGardeXPrefere == -1){
-                binDeplacementGauche = true;
+            else{
+                if(directionGardeYPrefere == 1){
+                    binDeplacementBas = true;
+                }
+                else if(directionGardeYPrefere == -1){
+                    binDeplacementHaut = true;
+                }
             }
+
         }
     }
 
 
-    let tuileEnBas = garde.tuileEntourage.find(
-        (tuile) => 
-            tuile.tuileX == garde.tuileActive.tuileX &&
-            tuile.tuileY == garde.tuileActive.tuileY + 1
-    )
+
 
     garde.binGrimpeEchelle = false;
-    if(garde.tuileActive.type == 'E' || tuileEnBas.type == 'E'){
-        if(garde.tuileActive.type == 'E' || tuileEnBas.tuileY*objCarteTuile.yLargeurTuile + objGardes.vitesseY < garde.positionY + objGardes.hauteur/2){
+    if((garde.tuileActive.type == 'E' || tuileEnBas.type == 'E') && (binDeplacementBas || binDeplacementHaut)){
+        if(garde.tuileActive.type == 'E' || tuileEnBas.tuileY*objCarteTuile.yLargeurTuile + objGardes.vitesseY <= garde.positionY + objGardes.hauteur/2){
             garde.binGrimpeEchelle = true;
         }
         else{
@@ -992,7 +1037,7 @@ function graviteGardes(garde){
     )
 
 
-    if(tuileBas.type == 'P' || tuileBas.type == 'B'){
+    if(tuileBas.type == 'P' || tuileBas.type == 'B' || tuileBas.type == 'E'){
         if(tuileBas.tuileY*objCarteTuile.yLargeurTuile< garde.positionY + objGardes.hauteur/2){
             binDescend = false;
         }
@@ -1050,7 +1095,7 @@ function dessiner() {
     dessinerGardes();
 
     dessinerMurs();
-    dessinerJoueur(Math.floor(objJoueur.compteurFrame/6),'white')
+    dessinerJoueur()
     objC2D.restore();
 }
 
@@ -1327,7 +1372,7 @@ function dessinerMurs() {
 }
 
 
-function dessinerJoueur(frame, couleurCorps) {
+function dessinerJoueur() {
     objC2D.save();
 
     let x = objJoueur.positionX;
@@ -1568,66 +1613,6 @@ function dessinerJoueur(frame, couleurCorps) {
 
     }
 
-
-    // Définitiion de la couleur de la tenue du personnage
-    // objC2D.fillStyle = couleurCorps || "red";
-
-    // Corps (inclut bras et tronc)
-    // objC2D.fillRect( -8, -10, 16, 20);
-
-    // let displacement = 30;
-
-    // objC2D.fillRect(-6, -8, 12, 16);
-
-    // Tête (avec casque jaune) // J'au changé à blanche pour mieux le faire ressembler à lode runner (de plus je ne comprends pas la raison de casque)
-    // objC2D.fillStyle = "white"; // Jaune orangé
-    // objC2D.fillRect( -4, -16, 8, 8);
-
-    // Casque cyan 
-    // objC2D.fillStyle = "cyan";
-    // objC2D.fillRect( -2, -18, 4, 4);
-
-     
-
-
-
-    if (true) {
-
-        // // Animation des jambes
-        // let jambeGaucheX = mouvement < 2 ?  4 :  6;
-        // let jambeDroiteX = mouvement < 2 ?  10 :  8;
-        // let jambeGaucheY = mouvement < 2 ? 26 : 24;
-        // let jambeDroiteY = mouvement < 2 ? 24 : 26;
-
-        // objC2D.fillStyle = "white";
-        // objC2D.fillRect(jambeGaucheX, jambeGaucheY, 5, 10);
-        // objC2D.fillRect(jambeDroiteX, jambeDroiteY, 5, 10);
-
-        // // Animation des bras
-        // let brasGaucheX = mouvement < 2 ?  2 :  5;
-        // let brasDroiteX = mouvement < 2 ?  13 :  10;
-        // let brasGaucheY = mouvement < 2 ? 12 : 6;
-        // let brasDroiteY = mouvement < 2 ? 6 : 12;
-
-        // objC2D.fillStyle = couleurCorps;
-        // objC2D.fillRect(brasGaucheX, brasGaucheY, 5, 6);
-        // objC2D.fillRect(brasDroiteX, brasDroiteY, 5, 6);
-
-
-
-        
-    } else {
-        // Position immobile
-        objC2D.fillStyle = "white";
-        objC2D.fillRect( 5, 24, 5, 10); // Jambe gauche
-        objC2D.fillRect( 10, 24, 5, 10); // Jambe droite
-
-        objC2D.fillStyle = couleurCorps;
-        objC2D.fillRect( 2, 10, 5, 6); // Bras gauche
-        objC2D.fillRect( 13, 10, 5, 6); // Bras droit
-    }
-
-
     objC2D.restore();
 }
 
@@ -1647,7 +1632,7 @@ function dessinerGardes(){
         if(garde.binGrimpeEchelle && garde.positionY % 16 <= 8){
             objC2D.scale(-1,1)
         }
-        if(garde.binTomber && objStatJeu.temps % 15 <= 7){
+        if(garde.binTomber && garde.positionY % 32 <= 16){
             objC2D.scale(-1,1)
         }
         if(garde.direction == 1){
@@ -1806,29 +1791,6 @@ function dessinerGardes(){
                 objC2D.fillRect(-8,15,7,12)   
             }
         }
-
-
-
-        objC2D.restore();
-
-
-        objC2D.save();
-        objC2D.translate(garde.positionX-25,garde.positionY-25);
-
-            // // Pour debug
-            // objC2D.fillStyle = 'red';
-            // objC2D.fillRect(
-            //     -objGardes.largeur/2,
-            //     -objGardes.hauteur/2,
-            //     objGardes.largeur,
-            //     objGardes.hauteur
-            // )
-
-            objC2D.fillStyle = 'rgb(0, 255, 47)'
-            objC2D.beginPath()
-            objC2D.arc(0,0,5,0,2*Math.PI,false);
-            objC2D.fill();
-
         
         objC2D.restore();
     })
