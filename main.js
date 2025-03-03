@@ -155,7 +155,7 @@ function initCarteTuile(){
     for(let x = 1; x <= objCarteTuile.xFinCarte/objCarteTuile.xLargeurTuile;x++){
         for(let y = 1; y <= objCarteTuile.yFinCarte/objCarteTuile.yLargeurTuile; y++){
 
-            let tuileInsere = {tuileX: x, tuileY: y, type: 'V'}
+            let tuileInsere = {tuileX: x, tuileY: y, type: 'V',binTrouPlein: false}
 
             // Plancher de béton
             if(y >= 17){
@@ -693,12 +693,12 @@ function graviteJoueur() {
     )
 
 
-    if(tuileBas.type != 'V' && tuileBas.type != 'F' && tuileBas.type != 'L'){
+    if(tuileBas.type != 'V' && tuileBas.type != 'F' && tuileBas.type != 'L' && (tuileBas.type != 'T' || tuileBas.binTrouPlein == true)){
         if(tuileBas.tuileY*objCarteTuile.yLargeurTuile< objJoueur.positionY + objJoueur.hauteur/2){
             binDescend = false;
         }
     }
-    else if(tuileBas.type == 'V'){
+    else if(tuileBas.type == 'V' || tuileBas.type == 'T'){
         if( tuileGauchBas.type != 'V' && 
             (tuileGauchBas.tuileX + 1 ) * objCarteTuile.xLargeurTuile > objJoueur.positionX - objJoueur.largeur/2
         ){
@@ -790,6 +790,7 @@ function miseAJourGardes(){
             }
             else{
                 garde.positionX += xDeplacementGarde*objGardes.vitesseX;
+                tuileEnBas.binTrouPlein = false;
             }
 
             if(tuileEnBas.type != 'T' && garde.tuileActive.type != 'T'){
@@ -806,6 +807,7 @@ function miseAJourGardes(){
             garde.binTomber = true;
             garde.positionX = garde.tuileActive.tuileX*objCarteTuile.xLargeurTuile + objCarteTuile.xLargeurTuile/2;
             garde.positionY = garde.tuileActive.tuileY*objCarteTuile.yLargeurTuile + objCarteTuile.yLargeurTuile/2;
+            garde.tuileActive.binTrouPlein = true;
             
         }
         else{
