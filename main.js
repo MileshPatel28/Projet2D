@@ -80,7 +80,9 @@ function initStatistiqueJeu(){
 
     objStatJeu.intVie = 10;
     objStatJeu.intNiveau = 1;
+
     objStatJeu.score = 0;
+    objStatJeu.scoreDebutNiveau = 0;
 }
 
 function initMurs() {
@@ -286,6 +288,7 @@ function initJoueur() {
 
     objJoueur.binGrimpeEchelle = false;
     objJoueur.binRelache = false;
+    objJoueur.binMort = false;
 }
 
 
@@ -366,6 +369,8 @@ function effacerDessin() {
 
 function mettreAjourAnimation() {
 
+    console.log(objControlleurJeu.jeuPause)
+
     if(!objControlleurJeu.jeuPause){
         miseAJourStatistique();
 
@@ -374,48 +379,69 @@ function mettreAjourAnimation() {
         miseAJourGardes();
     }
 
-    if(objJoueur.positionY < objCarteTuile.yLargeurTuile*2){
+
+    
+
+    // Gestion quand joueur perd
+    if(objJoueur.binMort && objJoueur.positionY + objJoueur.hauteur/2 < 0){
+        initCarteTuile();
+        initGardes();
+        initJoueur();
+        objStatJeu.intVie--;
+        objStatJeu.score = objStatJeu.scoreDebutNiveau;
+    }
+    else if(objJoueur.binMort){
+        objJoueur.positionY -= objJoueur.vitesseY;
+    }
+    else if(objControlleurJeu.binProchaineNiveau){
+        joueurProchaineNiveau();
+    }
+    else if(objJoueur.positionY < objCarteTuile.yLargeurTuile*2){
         objControlleurJeu.jeuPause = true;
         objControlleurJeu.binProchaineNiveau = true;
     }
-
-    if(objControlleurJeu.binProchaineNiveau){
-        joueurProchaineNiveau();
-    }
+    
 }
 
 // Évenement pour détecter les touches du utilisateur
 document.addEventListener('keydown', (event) => {
-    if (event.key == 'ArrowUp') objControlleurJeu.cleHaut = true;
-    if (event.key == 'ArrowLeft') {
-        objControlleurJeu.cleGauche = true;
-        objJoueur.direction = -1;
-    }
-    if (event.key == 'ArrowRight') {
-        objControlleurJeu.cleDroit = true;
-        objJoueur.direction = 1;
-    }
-    if (event.key == 'ArrowDown') objControlleurJeu.cleBas = true;
-    if (event.key == 'x') {
-        let tuileGauchBas = objJoueur.tuileEntourage.find(
-            (tuile) => 
-                tuile.tuileX == objJoueur.tuileActive.tuileX - 1 &&
-                tuile.tuileY == objJoueur.tuileActive.tuileY + 1
-        )
+    if(!objControlleurJeu.jeuPause){
+        if (event.key == 'ArrowUp') objControlleurJeu.cleHaut = true;
+        if (event.key == 'ArrowLeft') {
+            objControlleurJeu.cleGauche = true;
+            objJoueur.direction = -1;
+        }
+        if (event.key == 'ArrowRight') {
+            objControlleurJeu.cleDroit = true;
+            objJoueur.direction = 1;
+        }
+        if (event.key == 'ArrowDown') objControlleurJeu.cleBas = true;
+        if (event.key == 'x') {
+            let tuileGauchBas = objJoueur.tuileEntourage.find(
+                (tuile) => 
+                    tuile.tuileX == objJoueur.tuileActive.tuileX - 1 &&
+                    tuile.tuileY == objJoueur.tuileActive.tuileY + 1
+            )
 
-        tuileGauchBas.type = 'T'
-    }
-    if (event.key == 'z') {
-        let tuileDroitBas = objJoueur.tuileEntourage.find(
-            (tuile) => 
-                tuile.tuileX == objJoueur.tuileActive.tuileX + 1 &&
-                tuile.tuileY == objJoueur.tuileActive.tuileY + 1
-        )
+            tuileGauchBas.type = 'T'
+        }
+        if (event.key == 'z') {
+            let tuileDroitBas = objJoueur.tuileEntourage.find(
+                (tuile) => 
+                    tuile.tuileX == objJoueur.tuileActive.tuileX + 1 &&
+                    tuile.tuileY == objJoueur.tuileActive.tuileY + 1
+            )
 
-        tuileDroitBas.type = 'T'
+            tuileDroitBas.type = 'T'
+        }
     }
+
     
-    if(objJoueur.positionY > objCarteTuile.yLargeurTuile*2 && objControlleurJeu.jeuPause){
+    // Fait en sorte de commencer le jeu (ou le niveua)
+    if(objJoueur.positionY > objCarteTuile.yLargeurTuile*2 && 
+        objControlleurJeu.jeuPause &&
+        objJoueur.binMort == false
+    ){
         objControlleurJeu.jeuPause = false;
         objJoueur.binGrimpeEchelle = false;
     }
@@ -423,10 +449,13 @@ document.addEventListener('keydown', (event) => {
 })
 
 document.addEventListener('keyup', (event) => {
-    if (event.key == 'ArrowUp') objControlleurJeu.cleHaut = false;
-    if (event.key == 'ArrowLeft') objControlleurJeu.cleGauche = false;
-    if (event.key == 'ArrowRight') objControlleurJeu.cleDroit = false;
-    if (event.key == 'ArrowDown') objControlleurJeu.cleBas = false;
+    if(!objControlleurJeu.jeuPause){
+        if (event.key == 'ArrowUp') objControlleurJeu.cleHaut = false;
+        if (event.key == 'ArrowLeft') objControlleurJeu.cleGauche = false;
+        if (event.key == 'ArrowRight') objControlleurJeu.cleDroit = false;
+        if (event.key == 'ArrowDown') objControlleurJeu.cleBas = false;
+    }
+    
 })
 
 function miseAJourStatistique(){
@@ -738,13 +767,12 @@ function joueurProchaineNiveau(){
 
     if(objJoueur.positionY <= -objJoueur.hauteur){
         objControlleurJeu.binProchaineNiveau = false;
-        objJoueur.binGrimpeEchelle = false;
         objStatJeu.intNiveau++;
 
-        objJoueur.positionX = objCanvas.width/2; 
-        objJoueur.positionY = 775; 
-
+        objStatJeu.scoreDebutNiveau = objStatJeu.score;
         initCarteTuile();
+        initGardes();
+        initJoueur();
     }
 }
 
@@ -813,6 +841,14 @@ function miseAJourGardes(){
         else{
             deplacerGarde(garde);
             graviteGardes(garde);
+        }
+
+        // Contact avec joueur
+        let distanceJoueur = Math.hypot(garde.positionX - objJoueur.positionX,garde.positionY - objJoueur.positionY);
+
+        if(distanceJoueur < 6){
+            objControlleurJeu.jeuPause = true;
+            objJoueur.binMort = true;
         }
 
     })
