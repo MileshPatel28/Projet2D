@@ -1,15 +1,10 @@
 // Branch Pre-Master
-//
-/**
- *  NOTE POUR PROJET
- *  Sur github, les contributions n'est pas representative de qui fait quoi. 
- * 
- */
+
 
 var objCanvas = null;
 var objC2D = null;
 var objCycleAnimation = null;
-
+var objSons = null;
 var objControlleurJeu = null;
 
 var objMurs = null;
@@ -24,7 +19,7 @@ var joueurEnMouvement = false;
 
 var objGardes = null;
 
-
+var debutAppDEBUG = performance.now();
 
 /**
  *  -----------------------
@@ -45,6 +40,8 @@ function initJeu() {
 
     objC2D = objCanvas.getContext('2d');
 
+    initSons();
+
     initControlleurJeu();
     initStatistiqueJeu();
     initMurs();
@@ -55,6 +52,67 @@ function initJeu() {
 
     dessiner();
     animer();
+}
+
+function initSons(){
+    objSons = new Object();
+
+    var objSon = document.createElement('audio');
+    objSon.setAttribute('src', './audio/lingot.mp3');
+    objSon.volume = 0.05;
+    objSon.load();
+    objSons.lingot = objSon;
+
+    objSon = document.createElement('audio');
+    objSon.setAttribute('src', './audio/prochaineNiveau.mp3');
+    objSon.load();
+    objSons.prochaineNiveau = objSon;
+
+    objSon = document.createElement('audio');
+    objSon.setAttribute('src', './audio/lodeRunnerPerdVie.mp3');
+    objSon.playbackRate = 0.5
+    objSon.load();
+    objSons.lodeRunnerPerdVie = objSon;
+
+    objSon = document.createElement('audio');
+    objSon.setAttribute('src', './audio/lodeRunnerTombe.mp3');
+    objSon.playbackRate = 0.5
+    objSon.load();
+    objSons.lodeRunnerTombe = objSon;
+    objSons.lodeRunnerTombeJoue = false;
+    
+    objSon = document.createElement('audio');
+    objSon.setAttribute('src', './audio/lodeRunnerTrou.mp3');
+    objSon.load();
+    objSons.lodeRunnerTrou = objSon;
+
+    objSon = document.createElement('audio');
+    objSon.setAttribute('src', './audio/gameOver.mp3');
+    objSon.volume = 0.5;
+    objSon.load();
+    objSons.gameOver = objSon;
+
+    objSon = document.createElement('audio');
+    objSon.setAttribute('src', './audio/gameOver.mp3');
+    objSon.volume = 0.5;
+    objSon.load();
+    objSons.gameOver = objSon;
+
+    objSon = document.createElement('audio');
+    objSon.setAttribute('src', './audio/briqueConstruction.mp3');
+    objSon.load();
+    objSons.briqueConstruction = objSon;
+
+    objSon = document.createElement('audio');
+    objSon.setAttribute('src', './audio/gardeMort.mp3');
+    objSon.load();
+    objSons.gardeMort = objSon;
+
+    objSon = document.createElement('audio');
+    objSon.setAttribute('src', './audio/gardeTrou.mp3');
+    objSon.load();
+    objSons.gardeTrou = objSon;
+
 }
 
 function initControlleurJeu() {
@@ -78,11 +136,13 @@ function initStatistiqueJeu(){
     objStatJeu.secondsEcoule = 0;
     objStatJeu.minuteEcoule = 0;
 
-    objStatJeu.intVie = 10;
+    objStatJeu.intVie = 5; // Changer a 5
     objStatJeu.intNiveau = 1;
 
     objStatJeu.score = 0;
     objStatJeu.scoreDebutNiveau = 0;
+
+    objStatJeu.nombreLingot = 6; //Changer a 6
 }
 
 function initMurs() {
@@ -139,7 +199,6 @@ function initMurs() {
 // F = Barre de franchissement
 // L = Lingot d'or
 // T = trou temporaire
-
 function initCarteTuile(){
     objCarteTuile = new Object();
     
@@ -157,7 +216,7 @@ function initCarteTuile(){
     for(let x = 1; x <= objCarteTuile.xFinCarte/objCarteTuile.xLargeurTuile;x++){
         for(let y = 1; y <= objCarteTuile.yFinCarte/objCarteTuile.yLargeurTuile; y++){
 
-            let tuileInsere = {tuileX: x, tuileY: y, type: 'V',binTrouPlein: false}
+            let tuileInsere = {tuileX: x, tuileY: y, type: 'V',binTrouPlein: false,compteurTuile: -1}
 
             // Plancher de béton
             if(y >= 17){
@@ -223,18 +282,6 @@ function initCarteTuile(){
 
 
 
-            if(tuileInsere.type == 'P'){
-                let tuileEnHaut = new Object();
-
-                tuileEnHaut.y = y - 1;
-                tuileEnHaut.x = x;
-
-                if(y != 4 && x != 18){
-                    objCarteTuile.tabPotentielle.push(tuileEnHaut)
-                }
-                
-            }
-
             if(x <= 28){
                 objCarteTuile.tabTuile.push(tuileInsere)
             }
@@ -242,23 +289,34 @@ function initCarteTuile(){
         }
     }
 
-    for(let i = 1; i <= 6; i++){
-        let binBarrePlace = false;
-        
-        while(!binBarrePlace){
-            let tuileCoordonee = objCarteTuile.tabPotentielle[randInt(0,objCarteTuile.tabPotentielle.length - 1)]
 
-            objCarteTuile.tabTuile.forEach((tuile) => {
-                if( tuile.tuileX == tuileCoordonee.x &&
-                    tuile.tuileY == tuileCoordonee.y &&
-                    tuile.type == 'V'
+    objCarteTuile.tabTuile.forEach((tuileVide) => {
+        let binTuilePotentielle = false;
+
+        if(tuileVide.type == 'V'){
+            objCarteTuile.tabTuile.forEach((tuilePaserelle) => {
+                if(tuileVide.tuileX == tuilePaserelle.tuileX &&
+                    tuileVide.tuileY == tuilePaserelle.tuileY - 1 &&
+                    tuilePaserelle.type == 'P'
                 ){
-                    tuile.type = 'L';
-                    binBarrePlace = true;
+                    binTuilePotentielle = true;
                 }
             })
         }
 
+        if(binTuilePotentielle){
+            objCarteTuile.tabPotentielle.push(tuileVide)
+        }
+    })
+
+    for(let i = 1; i <= 6; i++){
+        let tuilesBarrePossible = objCarteTuile.tabPotentielle.filter((tuile) => tuile.type == 'V' && tuile.tuileY <= 14);
+        tuilesBarrePossible[randInt(0,tuilesBarrePossible.length - 1)].type = 'L'
+    }
+
+    for(let i = 1; i <= 2 + objStatJeu.intNiveau; i++){
+        let tuilesGardePossible = objCarteTuile.tabPotentielle.filter((tuile) => tuile.type == 'V' && tuile.tuileY <= 14 );
+        tuilesGardePossible[randInt(0,tuilesGardePossible.length - 1)].type = 'G'
     }
 
 
@@ -274,8 +332,8 @@ function initJoueur() {
     objJoueur.largeur = 40;
     objJoueur.hauteur = 50;
 
-    objJoueur.positionX = 23*objCarteTuile.xLargeurTuile; // Changer a objCanvas.width/2
-    objJoueur.positionY = 13*objCarteTuile.yLargeurTuile; //775
+    objJoueur.positionX = 20*objCarteTuile.xLargeurTuile; // Changer a objCanvas.width/2
+    objJoueur.positionY = 4*objCarteTuile.yLargeurTuile; //775
 
     objJoueur.vitesseX = 3;
     objJoueur.vitesseY = 2;
@@ -289,6 +347,9 @@ function initJoueur() {
     objJoueur.binGrimpeEchelle = false;
     objJoueur.binRelache = false;
     objJoueur.binMort = false;
+
+    objJoueur.tempsCreuseTrou = -1;
+    objJoueur.directionCreuseTrou = 0;
 }
 
 
@@ -303,35 +364,43 @@ function initGardes(){
 
     objGardes.tabGardes = [];
 
-    // for(let i = 1; i <= 2 + objStatJeu.intNiveau; i++){
-    //     let objGardeDebug = new Object();
-    //     objGardeDebug.positionX = randInt(0,objCanvas.width)
-    //     objGardeDebug.positionY = randInt(0,objCanvas.height);
+    let listeCouleurCorps = [
+        "red",
+        "blue",
+        "green",
+        "yellow",
+        "cyan",
+        "magenta"
+    ]
 
-    //     objGardeDebug.tuileActive = {}
-    //     objGardeDebug.tuileEntourage = []
+    objCarteTuile.tabTuile.forEach((tuileGarde) => {
+        if(tuileGarde.type == 'G'){
+            let objGarde = new Object();
+            objGarde.positionX = tuileGarde.tuileX*objCarteTuile.xLargeurTuile + objCarteTuile.xLargeurTuile/2; //
+            objGarde.positionY = tuileGarde.tuileY*objCarteTuile.yLargeurTuile + objCarteTuile.yLargeurTuile/2;
+            objGarde.direction = 0;
+        
+            objGarde.tuileActive = {}
+            objGarde.tuileEntourage = []
+            objGarde.tempsTrou = -1;
+        
+            objGarde.binGrimpeEchelle = false;
+            objGarde.binRelache = false;
+            objGarde.binMort = false;
+            objGarde.tuileMort = null;
+            objGarde.binLingot = false;
+        
+            objGarde.couleurCorps = listeCouleurCorps[randInt(0,listeCouleurCorps.length - 1)]
+        
+            objGardes.tabGardes.push(objGarde)
 
-    //     objGardeDebug.binGrimpeEchelle = false;
-    //     objGardeDebug.binRelache = false;
+            tuileGarde.type == 'V'
+        }
 
-    //     objGardes.tabGardes.push(objGardeDebug)
-    // }
+    })
 
-    let objGardeDebug = new Object();
-    objGardeDebug.positionX = 20*objCarteTuile.xLargeurTuile
-    objGardeDebug.positionY = 14*objCarteTuile.yLargeurTuile;
-    objGardeDebug.direction = 0;
 
-    objGardeDebug.tuileActive = {}
-    objGardeDebug.tuileEntourage = []
-    objGardeDebug.tempsTrou = -1;
 
-    objGardeDebug.binGrimpeEchelle = false;
-    objGardeDebug.binRelache = false;
-
-    objGardeDebug.couleurCorps = 'red'
-
-    objGardes.tabGardes.push(objGardeDebug)
 }
 
 /**
@@ -369,7 +438,13 @@ function effacerDessin() {
 
 function mettreAjourAnimation() {
 
-    console.log(objControlleurJeu.jeuPause)
+    // Gestion de game over
+    if(objStatJeu.intVie <= 0){
+        objStatJeu.jeuPause = true;
+        objJoueur.positionY = objCanvas.height*2;
+        objSons.gameOver.play();
+    }
+
 
     if(!objControlleurJeu.jeuPause){
         miseAJourStatistique();
@@ -377,6 +452,7 @@ function mettreAjourAnimation() {
         //deplacerGardes();
         miseAJourJoueur();
         miseAJourGardes();
+        miseAJourTuiles()
     }
 
 
@@ -396,16 +472,42 @@ function mettreAjourAnimation() {
     else if(objControlleurJeu.binProchaineNiveau){
         joueurProchaineNiveau();
     }
-    else if(objJoueur.positionY < objCarteTuile.yLargeurTuile*2){
+    else if(objJoueur.positionY <= objCarteTuile.yLargeurTuile*1){
         objControlleurJeu.jeuPause = true;
         objControlleurJeu.binProchaineNiveau = true;
+        objSons.prochaineNiveau.play();
     }
     
 }
 
 // Évenement pour détecter les touches du utilisateur
 document.addEventListener('keydown', (event) => {
-    if(!objControlleurJeu.jeuPause){
+    if(!objControlleurJeu.jeuPause && objJoueur.tempsCreuseTrou < 0){
+
+        let tuileGauchBas = objJoueur.tuileEntourage.find(
+            (tuile) => 
+                tuile.tuileX == objJoueur.tuileActive.tuileX - 1 &&
+                tuile.tuileY == objJoueur.tuileActive.tuileY + 1
+        )
+    
+        let tuileDroitBas = objJoueur.tuileEntourage.find(
+            (tuile) => 
+                tuile.tuileX == objJoueur.tuileActive.tuileX + 1 &&
+                tuile.tuileY == objJoueur.tuileActive.tuileY + 1
+        )
+
+        let tuileGauche = objJoueur.tuileEntourage.find(
+            (tuile) => 
+                tuile.tuileX == objJoueur.tuileActive.tuileX - 1 &&
+                tuile.tuileY == objJoueur.tuileActive.tuileY
+        )
+    
+        let tuileDroit = objJoueur.tuileEntourage.find(
+            (tuile) => 
+                tuile.tuileX == objJoueur.tuileActive.tuileX + 1 &&
+                tuile.tuileY == objJoueur.tuileActive.tuileY
+        )
+
         if (event.key == 'ArrowUp') objControlleurJeu.cleHaut = true;
         if (event.key == 'ArrowLeft') {
             objControlleurJeu.cleGauche = true;
@@ -416,34 +518,27 @@ document.addEventListener('keydown', (event) => {
             objJoueur.direction = 1;
         }
         if (event.key == 'ArrowDown') objControlleurJeu.cleBas = true;
-        if (event.key == 'x') {
-            let tuileGauchBas = objJoueur.tuileEntourage.find(
-                (tuile) => 
-                    tuile.tuileX == objJoueur.tuileActive.tuileX - 1 &&
-                    tuile.tuileY == objJoueur.tuileActive.tuileY + 1
-            )
-
-            tuileGauchBas.type = 'T'
+        if (event.key == 'x' && tuileGauchBas.type == 'P' && tuileGauche.type != 'L') {
+            objJoueur.tempsCreuseTrou = 30;
+            objJoueur.direction = -1;
         }
-        if (event.key == 'z') {
-            let tuileDroitBas = objJoueur.tuileEntourage.find(
-                (tuile) => 
-                    tuile.tuileX == objJoueur.tuileActive.tuileX + 1 &&
-                    tuile.tuileY == objJoueur.tuileActive.tuileY + 1
-            )
-
-            tuileDroitBas.type = 'T'
+        if (event.key == 'z' && tuileDroitBas.type == 'P' && tuileDroit.type != 'L') {
+            objJoueur.tempsCreuseTrou = 30;
+            objJoueur.direction = 1;
         }
     }
 
     
-    // Fait en sorte de commencer le jeu (ou le niveua)
-    if(objJoueur.positionY > objCarteTuile.yLargeurTuile*2 && 
+    // Fait en sorte de commencer le jeu (ou le niveau)
+    if(objJoueur.positionY > 1*objCarteTuile.yLargeurTuile && 
         objControlleurJeu.jeuPause &&
-        objJoueur.binMort == false
+        objJoueur.binMort == false &&
+        objStatJeu.intVie > 0
     ){
         objControlleurJeu.jeuPause = false;
         objJoueur.binGrimpeEchelle = false;
+
+        debutAppDEBUG = performance.now()//DEBUG ENLEVER
     }
 
 })
@@ -478,15 +573,26 @@ function miseAJourStatistique(){
     if(objJoueur.tuileActive && objJoueur.tuileActive.type == 'L'){
         objJoueur.tuileActive.type = 'V';
         objStatJeu.score += 250;
+        objSons.lingot.play();
 
-        let binIngotsCollecte = true;
+        objStatJeu.nombreLingot--;
 
-        objCarteTuile.tabTuile.forEach((tuile) => {
-            if(tuile.type == 'L') binIngotsCollecte = false;
-        })
-
-        if(binIngotsCollecte) genererEscalier();
+        if(objStatJeu.nombreLingot <= 0) genererEscalier();
     }
+
+    // DEBUG A ENLEVER (Mesure le performance de voir si les frames sont tres en arriere)
+    // if(objStatJeu.temps % 10*60 == 0){
+        
+    //     let tempsPerformance = (Math.round((performance.now() - debutAppDEBUG)/1000*100)/100)
+    //     let tempsJeu = (Math.round((objStatJeu.temps/60)*100)/100)
+        
+
+    //     console.log( "Performance (s/s)= " +
+    //         tempsJeu.toFixed(2) + "/" + 
+    //         tempsPerformance.toFixed(2) + "   " +
+    //         (tempsJeu > tempsPerformance ? "↑" : (tempsJeu < tempsPerformance ? "↓" : "="))
+    //     )
+    // }
 }
 
 function genererEscalier(){
@@ -496,9 +602,63 @@ function genererEscalier(){
 
 }
 
+// Compter les trous et les remplir
+function miseAJourTuiles(){
+    objCarteTuile.tabTuile.forEach((tuile) => {
+        if(tuile.type == 'T'){
+            tuile.compteurTuile--;
+            if(tuile.compteurTuile <= 0){
+                tuile.type = 'P'
+                tuile.tableMiniTuiles = null;
+            }
+
+
+
+            if(!tuile.tableMiniTuiles) {
+                tabMiniTuiles = [];
+
+                for(let i = 0; i < objCarteTuile.xLargeurTuile; i += 5){
+                    for(let j = 0; j < objCarteTuile.yLargeurTuile; j += 5){
+                        let tuileMiniInsere = {x: i, y: j, binEffacer: false} 
+                        tabMiniTuiles.push(tuileMiniInsere)
+                    }
+                }
+
+                tuile.tableMiniTuiles = tabMiniTuiles;
+            }
+
+
+            let delayEntreAnimation = 1;
+            let vitessAnimation = 4;
+
+            if(tuile.compteurTuile >= (8*60 - 100) && tuile.compteurTuile % delayEntreAnimation == 0){
+                for(let i = 0; i < vitessAnimation; i++){
+                    let tuilesEffacables = tuile.tableMiniTuiles.filter(miniTuile => !miniTuile.binEffacer);
+                    if(tuilesEffacables.length !== 0){
+                        tuilesEffacables[randInt(0,tuilesEffacables.length - 1)].binEffacer = true;
+                    }
+                }
+            }
+            else if(tuile.compteurTuile <= 100 && tuile.compteurTuile % delayEntreAnimation == 0){
+                for(let i = 0; i < vitessAnimation; i++){
+                    let tuilesEffacables = tuile.tableMiniTuiles.filter(miniTuile => miniTuile.binEffacer);
+                    if(tuilesEffacables.length !== 0){
+                        tuilesEffacables[randInt(0,tuilesEffacables.length - 1)].binEffacer = false;
+                    }
+                }
+            }
+
+            // Jouer son de reconstruction
+            if(tuile.compteurTuile == 100){
+                objSons.briqueConstruction.play();
+            }
+
+            
+        }
+    })
+}
 
 // Joueur Logique
-
 function miseAJourJoueur(){
 
     objJoueur.compteurFrame++;
@@ -523,6 +683,37 @@ function miseAJourJoueur(){
             tuile.tuileX >= objJoueur.tuileActive.tuileX - 1 && tuile.tuileX <= objJoueur.tuileActive.tuileX + 1 &&
             tuile.tuileY >= objJoueur.tuileActive.tuileY - 1 && tuile.tuileY <= objJoueur.tuileActive.tuileY + 1
         )
+    }
+
+    // Creuser trous
+    if(objJoueur.tempsCreuseTrou >= 0){
+        if(objJoueur.tempsCreuseTrou >= 30){
+            let tuileGauchBas = objJoueur.tuileEntourage.find(
+                (tuile) => 
+                    tuile.tuileX == objJoueur.tuileActive.tuileX - 1 &&
+                    tuile.tuileY == objJoueur.tuileActive.tuileY + 1
+            )
+        
+            let tuileDroitBas = objJoueur.tuileEntourage.find(
+                (tuile) => 
+                    tuile.tuileX == objJoueur.tuileActive.tuileX + 1 &&
+                    tuile.tuileY == objJoueur.tuileActive.tuileY + 1
+            )
+    
+            if(objJoueur.direction == -1){
+                tuileGauchBas.type = 'T';
+                tuileGauchBas.compteurTuile = 8*60;
+            }
+            else if(objJoueur.direction == 1){
+                tuileDroitBas.type = 'T';
+                tuileDroitBas.compteurTuile = 8*60;
+            }
+
+            objSons.lodeRunnerTrou.play();
+        }
+
+        objJoueur.positionX = objJoueur.tuileActive.tuileX*objCarteTuile.xLargeurTuile + objCarteTuile.xLargeurTuile/2
+        objJoueur.tempsCreuseTrou--;
     }
 
     graviteJoueur()
@@ -652,7 +843,6 @@ function deplacementJoueur() {
                 ){
                     objJoueur.positionY += 6;
                     objJoueur.binRelache = true;
-                    // objJoueur.tuileActive = {}
                 }
 
                 
@@ -691,6 +881,12 @@ function deplacementJoueur() {
         objJoueur.binGrimpeEchelle = false;
     }
     
+
+    if(objJoueur.tuileActive.type == 'P'){
+        objControlleurJeu.jeuPause = true;
+        objJoueur.binMort = true;
+        objSons.lodeRunnerPerdVie.play();
+    }
 }
 
 
@@ -740,7 +936,7 @@ function graviteJoueur() {
         }
     }
 
-    if(objJoueur.tuileActive.type == 'F'){
+    if(objJoueur.tuileActive.type == 'F' && objJoueur.positionY - objJoueur.hauteur/2 >= objJoueur.tuileActive.tuileY*objCarteTuile.yLargeurTuile){
         binDescend = false;
     }
 
@@ -759,6 +955,15 @@ function graviteJoueur() {
     else if(objJoueur.tuileActive.type == 'F' && !objJoueur.binRelache){
         objJoueur.positionY = objJoueur.tuileActive.tuileY*objCarteTuile.yLargeurTuile + objJoueur.hauteur/2 - objJoueur.vitesseY
     }
+
+    // Jouer le bruit
+    if(binDescend && !objSons.lodeRunnerTombeJoue && objJoueur.tuileActive.type == 'V' && (tuileBas.type == 'V' || tuileBas.type == 'T')){
+        objSons.lodeRunnerTombeJoue = true;
+        objSons.lodeRunnerTombe.play();
+    }
+    else if(!binDescend && objSons.lodeRunnerTombeJoue){
+        objSons.lodeRunnerTombeJoue = false;
+    }
     
 }
 
@@ -768,11 +973,13 @@ function joueurProchaineNiveau(){
     if(objJoueur.positionY <= -objJoueur.hauteur){
         objControlleurJeu.binProchaineNiveau = false;
         objStatJeu.intNiveau++;
+        objStatJeu.nombreLingot = 6;
 
+        objStatJeu.score += 1500;
         objStatJeu.scoreDebutNiveau = objStatJeu.score;
         initCarteTuile();
-        initGardes();
         initJoueur();
+        initGardes();
     }
 }
 
@@ -803,52 +1010,129 @@ function miseAJourGardes(){
                 tuile.tuileY == garde.tuileActive.tuileY + 1
         )
 
+        let tuileEnHaut = garde.tuileEntourage.find(
+            (tuile) => 
+                tuile.tuileX == garde.tuileActive.tuileX &&
+                tuile.tuileY == garde.tuileActive.tuileY - 1
+        )
+
+        // Deposer le lingot
+        if(1 == randInt(1,200) && garde.binLingot){
+            let lingotPotentielle = garde.tuileEntourage.find(
+                (tuile) => 
+                    tuile.tuileX == garde.tuileActive.tuileX - garde.direction &&
+                    tuile.tuileY == garde.tuileActive.tuileY
+            )
+
+            if(lingotPotentielle.type == 'V'){
+                lingotPotentielle.type = 'L'
+                garde.binLingot = false;
+            }
+        }
+
+        if(garde.tuileActive.type == 'P'){
+            garde.binMort = true;
+        }
+        else if(garde.tuileActive.type == 'L' && !garde.binLingot){
+            garde.binLingot = true;
+            garde.tuileActive.type = 'V';
+        }
 
         // Faire le garde tomber dans le trou
-        if(garde.tempsTrou >= 60*4 ){
-            garde.tempsTrou++;
-            garde.binTomber = false;
-
-            let xDeplacementGarde = (objJoueur.positionX - garde.positionX >= 0) ? 1 : -1;
-            
-            if(garde.tuileActive.type == 'T' || 
-                (garde.tuileActive.tuileY+1)*objCarteTuile.yLargeurTuile <= garde.positionY + objGardes.hauteur/2
+        if(!garde.binMort){
+            if(garde.tempsTrou >= 60*4 ){
+                garde.tempsTrou++;
+                garde.binTomber = false;
+    
+                let xDeplacementGarde = (objJoueur.positionX - garde.positionX >= 0) ? 1 : -1;
+                
+                if(garde.tuileActive.type == 'T' || 
+                    (garde.tuileActive.tuileY+1)*objCarteTuile.yLargeurTuile <= garde.positionY + objGardes.hauteur/2
+                ){
+                    garde.positionY -= objGardes.vitesseY
+                }
+                else{
+                    garde.positionX += xDeplacementGarde*objGardes.vitesseX;
+                    tuileEnBas.binTrouPlein = false;
+                }
+    
+                if(tuileEnBas.type != 'T' && garde.tuileActive.type != 'T'){
+                    garde.tempsTrou = -1;
+                }
+    
+                garde.direction = xDeplacementGarde;
+            }
+            else if( garde.tuileActive.type == 'T' && 
+                garde.positionY - objGardes.hauteur/2 + objGardes.vitesseY >= garde.tuileActive.tuileY*objCarteTuile.yLargeurTuile &&
+                garde.tempsTrou <= 60*4
             ){
-                garde.positionY -= objGardes.vitesseY
+                garde.tempsTrou++;
+                garde.binTomber = true;
+                garde.positionX = garde.tuileActive.tuileX*objCarteTuile.xLargeurTuile + objCarteTuile.xLargeurTuile/2;
+                garde.positionY = garde.tuileActive.tuileY*objCarteTuile.yLargeurTuile + objCarteTuile.yLargeurTuile/2;
+                garde.tuileActive.binTrouPlein = true;
+
+                if(garde.tempsTrou < 1){
+                    objStatJeu.score += 75;
+                }
+
+                if(garde.binLingot && tuileEnHaut.type == 'V'){
+                    garde.binLingot = false;
+                    tuileEnHaut.type = 'L';
+                }
+                
             }
             else{
-                garde.positionX += xDeplacementGarde*objGardes.vitesseX;
-                tuileEnBas.binTrouPlein = false;
+                deplacerGarde(garde);
+                graviteGardes(garde);
             }
 
-            if(tuileEnBas.type != 'T' && garde.tuileActive.type != 'T'){
-                garde.tempsTrou = -1;
-            }
+            // Contact avec joueur
+            let distanceJoueur = Math.hypot(garde.positionX - objJoueur.positionX,garde.positionY - objJoueur.positionY);
 
-            garde.direction = xDeplacementGarde;
-        }
-        else if( garde.tuileActive.type == 'T' && 
-            garde.positionY - objGardes.hauteur/2 + objGardes.vitesseY >= garde.tuileActive.tuileY*objCarteTuile.yLargeurTuile &&
-            garde.tempsTrou <= 60*4
-        ){
-            garde.tempsTrou++;
-            garde.binTomber = true;
-            garde.positionX = garde.tuileActive.tuileX*objCarteTuile.xLargeurTuile + objCarteTuile.xLargeurTuile/2;
-            garde.positionY = garde.tuileActive.tuileY*objCarteTuile.yLargeurTuile + objCarteTuile.yLargeurTuile/2;
-            garde.tuileActive.binTrouPlein = true;
+            if(distanceJoueur < 6){
+                objControlleurJeu.jeuPause = true;
+                objJoueur.binMort = true;
+                objSons.lodeRunnerPerdVie.play();
+            }
             
-        }
-        else{
-            deplacerGarde(garde);
-            graviteGardes(garde);
-        }
 
-        // Contact avec joueur
-        let distanceJoueur = Math.hypot(garde.positionX - objJoueur.positionX,garde.positionY - objJoueur.positionY);
+        }
+        else {
+            let positionRenaissanceGardeX = objCanvas.width/2;
+            let positionRenaissanceGardeY = 2*objCarteTuile.yLargeurTuile;
+            let intSecondsDeplacement = 3;
 
-        if(distanceJoueur < 6){
-            objControlleurJeu.jeuPause = true;
-            objJoueur.binMort = true;
+            if(garde.tuileMort == null){
+                garde.tuileMort = garde.tuileActive;
+            }
+            else if(garde.tuileMort == garde.tuileActive){
+                objSons.gardeMort.play();
+            }
+
+            let deplacementGardeX = (positionRenaissanceGardeX - (garde.tuileMort.tuileX*objCarteTuile.xLargeurTuile + objCarteTuile.xLargeurTuile/2))/(intSecondsDeplacement*60)
+            let deplacementGardeY = (positionRenaissanceGardeY - (garde.tuileMort.tuileY*objCarteTuile.yLargeurTuile + objCarteTuile.yLargeurTuile/2))/(intSecondsDeplacement*60)
+        
+            garde.positionX += deplacementGardeX;
+            garde.positionY += deplacementGardeY;
+
+            let distanceEntreRennaissance = Math.sqrt(
+                Math.pow(positionRenaissanceGardeX - garde.positionX,2) +
+                Math.pow(positionRenaissanceGardeY - garde.positionY,2)
+            )
+
+            if(distanceEntreRennaissance <= 5){
+                garde.tuileMort = null;
+                garde.binMort = false;
+                garde.tempsTrou = -1;
+                objStatJeu.score += 75;
+            }
+        }
+        
+
+        // Jouer sons si garde tombe dans trous
+        if(tuileEnBas.type == 'T' && garde.binTomber){
+            objSons.gardeTrou.play()
         }
 
     })
@@ -856,9 +1140,7 @@ function miseAJourGardes(){
 }
 
 /**
- * 
- * Problème avec le tuile de but pour le garde
- *  De plus si joueur va en haut le garde ne peut plus le target
+ * Doit perfectionner le movement
  */
 
 function deplacerGarde(garde){
@@ -880,6 +1162,31 @@ function deplacerGarde(garde){
     let distanceTuile = Number.MAX_SAFE_INTEGER;
 
 
+    let tuileHaut = garde.tuileEntourage.find(
+        (tuile) => 
+            tuile.tuileX == garde.tuileActive.tuileX &&
+            tuile.tuileY == garde.tuileActive.tuileY - 1
+    )
+
+    let tuileBas = garde.tuileEntourage.find(
+        (tuile) => 
+            tuile.tuileX == garde.tuileActive.tuileX &&
+            tuile.tuileY == garde.tuileActive.tuileY + 1
+    )
+
+    let tuileGauche = garde.tuileEntourage.find(
+        (tuile) => 
+            tuile.tuileX == garde.tuileActive.tuileX - 1 &&
+            tuile.tuileY == garde.tuileActive.tuileY
+    ) 
+
+    let tuileDroit = garde.tuileEntourage.find(
+        (tuile) => 
+            tuile.tuileX == garde.tuileActive.tuileX + 1 &&
+            tuile.tuileY == garde.tuileActive.tuileY
+    ) 
+
+
     if(Math.abs(distanceJoueurY) >= toleranceEntreJoueur){
         objCarteTuile.tabTuile.forEach((tuile) => {
             let binTuilePossible = false;
@@ -887,7 +1194,7 @@ function deplacerGarde(garde){
             if(directionGardeYPrefere == 1){
                 if(tuile.type == 'V' && tuile.tuileY == garde.tuileActive.tuileY){
                     objCarteTuile.tabTuile.forEach((tuileEchelle) => {
-                        if( tuileEchelle.type == 'E' && 
+                        if( (tuileEchelle.type == 'E' || tuileEchelle.type == 'V') && 
                             tuileEchelle.tuileY == tuile.tuileY + 1 &&
                             tuileEchelle.tuileX == tuile.tuileX
                         ){
@@ -896,10 +1203,10 @@ function deplacerGarde(garde){
                     })
                 }
                 else if(tuile.type == 'E' && tuile.tuileY == garde.tuileActive.tuileY){
-                    objCarteTuile.tabTuile.forEach((tuileBas) => {
-                        if( tuileBas.type == 'E' && 
-                            tuileBas.tuileY == tuile.tuileY + 1 &&
-                            tuileBas.tuileX == tuile.tuileX
+                    objCarteTuile.tabTuile.forEach((tuileEchellePotentielle) => {
+                        if( tuileEchellePotentielle.type == 'E' && 
+                            tuileEchellePotentielle.tuileY == tuile.tuileY + 1 &&
+                            tuileEchellePotentielle.tuileX == tuile.tuileX
                         ){
                             binTuilePossible = true;
                         }
@@ -934,15 +1241,6 @@ function deplacerGarde(garde){
         })
     }
 
-    console.log(JSON.stringify(tuileBut))
-    // console.log(garde.tuileActive)
-
-    let tuileEnBas = garde.tuileEntourage.find(
-        (tuile) => 
-            tuile.tuileX == garde.tuileActive.tuileX &&
-            tuile.tuileY == garde.tuileActive.tuileY + 1
-    )
-
     if(!garde.binTomber){
         if(tuileBut){
                 let distanceTuileBut = (tuileBut.tuileX*objCarteTuile.xLargeurTuile + objCarteTuile.xLargeurTuile/2) - garde.positionX
@@ -972,8 +1270,8 @@ function deplacerGarde(garde){
                 }
         }
         else{
-            if(tuileEnBas.type == 'E' || 
-                tuileEnBas.tuileY*objCarteTuile.yLargeurTuile + objGardes.vitesseY >= garde.positionY + objGardes.hauteur/2){
+            if(tuileBas.type == 'E' || 
+                tuileBas.tuileY*objCarteTuile.yLargeurTuile + objGardes.vitesseY >= garde.positionY + objGardes.hauteur/2){
                 if(directionGardeXPrefere == 1){
                     binDeplacementDroite = true;
                 }
@@ -997,8 +1295,8 @@ function deplacerGarde(garde){
 
 
     garde.binGrimpeEchelle = false;
-    if((garde.tuileActive.type == 'E' || tuileEnBas.type == 'E') && (binDeplacementBas || binDeplacementHaut)){
-        if(garde.tuileActive.type == 'E' || tuileEnBas.tuileY*objCarteTuile.yLargeurTuile + objGardes.vitesseY <= garde.positionY + objGardes.hauteur/2){
+    if((garde.tuileActive.type == 'E' || tuileBas.type == 'E') && (binDeplacementBas || binDeplacementHaut)){
+        if(garde.tuileActive.type == 'E' || tuileBas.tuileY*objCarteTuile.yLargeurTuile + objGardes.vitesseY <= garde.positionY + objGardes.hauteur/2){
             garde.binGrimpeEchelle = true;
         }
         else{
@@ -1007,19 +1305,6 @@ function deplacerGarde(garde){
     }
 
     // Collisions horizontales
-
-    let tuileGauche = garde.tuileEntourage.find(
-        (tuile) => 
-            tuile.tuileX == garde.tuileActive.tuileX - 1 &&
-            tuile.tuileY == garde.tuileActive.tuileY
-    ) 
-
-    let tuileDroit = garde.tuileEntourage.find(
-        (tuile) => 
-            tuile.tuileX == garde.tuileActive.tuileX + 1 &&
-            tuile.tuileY == garde.tuileActive.tuileY
-    ) 
-    
     
     if(tuileGauche && tuileGauche.type == 'P' && (tuileGauche.tuileX+1)*objCarteTuile.xLargeurTuile >= garde.positionX - objGardes.largeur/2 - objGardes.vitesseX){
         binDeplacementGauche = false;
@@ -1029,18 +1314,29 @@ function deplacerGarde(garde){
         binDeplacementDroite = false;
     }
 
+    // Collision avec le plancher si c'est un paserelle vers le bas
+    if((tuileBas.type == 'P' && garde.positionY + objGardes.hauteur/2 + objGardes.vitesseY >= tuileBas.tuileY*objCarteTuile.yLargeurTuile)){
+        binDeplacementBas = false;
+    }
+
+    // Obtenir les tuiles actives des autre gardes
+    let tuilesGardes = []
+
+    objGardes.tabGardes.forEach(garde => {
+        tuilesGardes.push(garde.tuileActive);
+    })
 
 
-    if(binDeplacementGauche){
+    if(binDeplacementGauche && tuilesGardes.filter((tuile) => tuile == tuileGauche).length == 0){
         garde.positionX -= objGardes.vitesseX;
     }
-    if(binDeplacementDroite){
+    if(binDeplacementDroite && tuilesGardes.filter((tuile) => tuile == tuileDroit).length == 0){
         garde.positionX += objGardes.vitesseX;
     }
-    if(binDeplacementHaut){
+    if(binDeplacementHaut && tuilesGardes.filter((tuile) => tuile == tuileHaut).length == 0){
         garde.positionY -= objGardes.vitesseY;
     }
-    if(binDeplacementBas){
+    if(binDeplacementBas && tuilesGardes.filter((tuile) => tuile == tuileBas).length == 0){
         garde.positionY += objGardes.vitesseY;
     }
 
@@ -1075,8 +1371,8 @@ function graviteGardes(garde){
     )
 
 
-    if(tuileBas.type == 'P' || tuileBas.type == 'B' || tuileBas.type == 'E'){
-        if(tuileBas.tuileY*objCarteTuile.yLargeurTuile< garde.positionY + objGardes.hauteur/2){
+    if(tuileBas.type == 'P' || tuileBas.type == 'B' || tuileBas.type == 'E' || (tuileBas.type == 'T' && tuileBas.binTrouPlein)){
+        if(tuileBas.tuileY*objCarteTuile.yLargeurTuile < garde.positionY + objGardes.hauteur/2){
             binDescend = false;
         }
     }
@@ -1093,7 +1389,10 @@ function graviteGardes(garde){
         }
     }
 
-    if(garde.tuileActive.type == 'F' || garde.tuileActive.type == 'P'){
+    if(garde.tuileActive.type == 'P'){
+        binDescend = false;
+    }
+    else if(garde.tuileActive.type == 'F' && garde.positionY - objGardes.hauteur/2 >= garde.tuileActive.tuileY*objCarteTuile.yLargeurTuile){
         binDescend = false;
     }
 
@@ -1134,6 +1433,8 @@ function dessiner() {
 
     dessinerMurs();
     dessinerJoueur()
+
+    dessinerGameOver();
     objC2D.restore();
 }
 
@@ -1156,7 +1457,7 @@ function dessinerTuiles() {
             tuile.tuileY * objCarteTuile.yLargeurTuile
         )
 
-        dessinerUnTuile(tuile.type);
+        dessinerUnTuile(tuile);
 
         objC2D.restore();
     })
@@ -1165,7 +1466,7 @@ function dessinerTuiles() {
     objC2D.restore();
 }
 
-function dessinerUnTuile(strType) {
+function dessinerUnTuile(tuile) {
     objC2D.save();
 
     objC2D.fillStyle = `rgb(${Math.random() * 255}, 
@@ -1189,20 +1490,23 @@ function dessinerUnTuile(strType) {
     )
     objC2D.fill();
 
-    if (strType == 'B') {
+    if (tuile.type == 'B') {
         dessinerBeton();
     }
-    else if (strType == 'P') {
+    else if (tuile.type == 'P') {
         dessinerPaserelle();
     }
-    else if (strType == 'E') {
+    else if (tuile.type == 'E') {
         dessinerEchelle();
     }
-    else if(strType == 'F'){
+    else if(tuile.type == 'F'){
         dessinerBarreDeFranchissement();
     }
-    else if(strType == 'L'){
+    else if(tuile.type == 'L'){
         dessinerLingots()
+    }
+    else if(tuile.type == 'T'){
+        dessinerTrou(tuile);
     }
 
     objC2D.restore();
@@ -1235,6 +1539,7 @@ function dessinerBeton(){
 }
 
 function dessinerPaserelle(){
+        objC2D.save();
     
         // Base du paserelle
         objC2D.fillStyle = 'rgb(72, 72, 72)'
@@ -1279,6 +1584,8 @@ function dessinerPaserelle(){
             objCarteTuile.yLargeurTuile / 2 - padBrique * 2
         )
         objC2D.fill();
+
+        objC2D.restore();
 }
 
 function dessinerEchelle(){
@@ -1331,7 +1638,6 @@ function dessinerBarreDeFranchissement(){
     objC2D.fill();
 }
 
-// J'ai changé les paramètre pour rendre le code plus lisibles en haut et de rendre plus compatible
 function dessinerLingots() {
     objC2D.save();
 
@@ -1372,6 +1678,39 @@ function dessinerLingots() {
     objC2D.restore();
 }
 
+function dessinerTrou(tuile) {
+    objC2D.save();
+
+    dessinerPaserelle();
+
+    objC2D.fillStyle = 'rgb(0,0,0)'
+    if(tuile.tableMiniTuiles){
+        
+        tuile.tableMiniTuiles.forEach(miniTuile => {
+            if(miniTuile.binEffacer){
+                objC2D.fillRect(
+                    miniTuile.x,
+                    miniTuile.y,
+                    5,
+                    5
+                )
+            }
+        })
+    }
+
+    if(tuile.compteurTuile < (8*60-100) && tuile.compteurTuile >= 100){
+        objC2D.fillRect(
+            0,
+            0,
+            objCarteTuile.xLargeurTuile,
+            objCarteTuile.yLargeurTuile
+        )
+    }
+    
+
+
+    objC2D.restore();
+}
 
 
 function dessinerMurs() {
@@ -1529,6 +1868,12 @@ function dessinerJoueur() {
     }
     else if(objJoueur.binTomber){
         // Dessiner le tomber du personnage
+
+        //Dessiner le casque
+        objC2D.fillStyle = 'cyan'
+        objC2D.fillRect(-1,-21,4,5)
+        objC2D.fillStyle = 'white'
+
         objC2D.fillRect(-largeurTete/2,-hauteurTete/2 - objJoueur.hauteur/4,largeurTete + 2,hauteurTete)
                         
         // Bras Droite
@@ -1549,6 +1894,11 @@ function dessinerJoueur() {
     }
     else if(objControlleurJeu.cleGauche || objControlleurJeu.cleDroit){
         if(objStatJeu.temps % 30 <= 10){
+
+            //Dessiner le casque
+            objC2D.fillStyle = 'cyan'
+            objC2D.fillRect(-1,-21,4,5)
+            objC2D.fillStyle = 'white'
 
             // Position Marche 1
             objC2D.fillRect(-largeurTete/2,-hauteurTete/2 - objJoueur.hauteur/4,largeurTete + 2,hauteurTete)
@@ -1577,6 +1927,11 @@ function dessinerJoueur() {
         }
         else if(objStatJeu.temps % 30 <= 20){
 
+            //Dessiner le casque
+            objC2D.fillStyle = 'cyan'
+            objC2D.fillRect(-1,-21,4,5)
+            objC2D.fillStyle = 'white'
+
             // Position Marche 2
             objC2D.fillRect(-largeurTete/2,-hauteurTete/2 - objJoueur.hauteur/4,largeurTete + 2,hauteurTete)
                     
@@ -1602,6 +1957,13 @@ function dessinerJoueur() {
                     
         }
         else if(objStatJeu.temps % 30 <= 30){
+
+            //Dessiner le casque
+            objC2D.fillStyle = 'cyan'
+            objC2D.fillRect(-1,-21,4,5)
+            objC2D.fillStyle = 'white'
+
+
             // Position Marche 3
             objC2D.fillRect(-largeurTete/2,-hauteurTete/2 - objJoueur.hauteur/4,largeurTete + 2,hauteurTete)
             
@@ -1627,8 +1989,16 @@ function dessinerJoueur() {
     }
     else{
         // Position Marche 3 (pour idle)
+
+        //Dessiner le casque
+        objC2D.fillStyle = 'cyan'
+        objC2D.fillRect(-1,-21,4,5)
+        objC2D.fillStyle = 'white'
+
         objC2D.fillRect(-largeurTete/2,-hauteurTete/2 - objJoueur.hauteur/4,largeurTete + 2,hauteurTete)
-            
+
+
+
         // Bras 1
         objC2D.fillRect(-4,-8,14,4)
         objC2D.fillRect(8,-4,9,4)
@@ -1647,7 +2017,22 @@ function dessinerJoueur() {
         // Jambe 2 
          objC2D.fillRect(-4,12,5,5)
         objC2D.fillRect(-8,15,7,12) 
+
         
+        // Dessiner laser si joueur creuse un trou
+        if(objJoueur.tempsCreuseTrou >= 0){
+            let adjustementLaser = 5;
+
+            objC2D.beginPath();
+            objC2D.globalAlpha = 0.5
+            objC2D.moveTo(-15,0);
+            objC2D.lineTo(-objCarteTuile.xLargeurTuile - objJoueur.largeur/2 - adjustementLaser,objJoueur.hauteur/2);
+            objC2D.lineTo(-objJoueur.largeur/2 - adjustementLaser,objJoueur.hauteur/2);
+        }
+        
+        
+        
+        objC2D.fill();  
 
     }
 
@@ -1657,10 +2042,16 @@ function dessinerJoueur() {
 function dessinerGardes(){
     objC2D.save();
 
-    let couleurTete = 'rgb(220, 190, 160)'
-
+    
+    
     objGardes.tabGardes.forEach((garde) => {
         objC2D.save();
+
+        let couleurTete = 'rgb(240, 212, 184)'
+
+        if(garde.binLingot){
+            couleurTete = 'rgb(255, 166, 22)'
+        }
 
         let x = garde.positionX;
         let y = garde.positionY;
@@ -1670,7 +2061,7 @@ function dessinerGardes(){
         if(garde.binGrimpeEchelle && garde.positionY % 16 <= 8){
             objC2D.scale(-1,1)
         }
-        if(garde.binTomber && garde.positionY % 32 <= 16){
+        if(garde.binTomber && garde.positionY % 32 <= 16 && !garde.binMort){
             objC2D.scale(-1,1)
         }
         if(garde.direction == 1){
@@ -1693,6 +2084,71 @@ function dessinerGardes(){
 
 
         if(false); // POur debug
+        else if(garde.tuileActive.type == 'F' && tuileBas.type == 'V'){
+            if(garde.positionX % 90 <= 30){
+                // Premier frame 
+                objC2D.fillStyle = couleurTete
+                largeurTete = 6
+                hauteurTete = 12
+
+                objC2D.fillRect(-largeurTete/2,-hauteurTete/2 - objGardes.hauteur/4 + 1,largeurTete + 2,hauteurTete)
+                                   
+                objC2D.fillStyle = garde.couleurCorps
+                // Bras Droite
+                objC2D.fillRect(-12,-11,9,4)
+                objC2D.fillRect(-15,-22,7,11)
+                                        
+                // Bras Gauche
+                objC2D.fillRect(9,-8,7,4)
+                objC2D.fillRect(13,-21,7,14)
+                                                        
+                // Corps
+                objC2D.fillRect(1,-8,8,12)
+                                      
+                objC2D.fillStyle = 'white'
+                // Jambe 1
+                objC2D.fillRect(1,4,4,9)
+                objC2D.fillRect(5,9,6,4)
+                objC2D.fillRect(8,12,7,4)
+                                        
+                // Jambe Gauche
+                objC2D.fillRect(8,0,10,4)
+                objC2D.fillRect(15,4,8,8)
+                objC2D.fillRect(19,4,4,12)
+            }
+            else{
+                if(garde.positionX % 90 >= 60){
+                    objC2D.scale(-1,1)
+                }
+    
+                // Deuxieme et troisieme frame 
+                objC2D.fillStyle = couleurTete
+                largeurTete = 6
+                hauteurTete = 7
+
+                objC2D.fillRect(-largeurTete/2,-hauteurTete/2 - objGardes.hauteur/4 + 1,largeurTete + 2,hauteurTete)
+                                
+                objC2D.fillStyle = garde.couleurCorps
+                // Bras Droite
+                objC2D.fillRect(3,-10,7,4)
+                objC2D.fillRect(5,-19,8,9)
+    
+                // Bras Gauche
+                objC2D.fillRect(-10,-8,13,4)
+                objC2D.fillRect(-15,-4,8,4)
+                            
+                // Corps
+                objC2D.fillRect(-3,-8,8,15)
+    
+                objC2D.fillStyle = 'white'
+                // Jambe 1
+                objC2D.fillRect(2,7,7,10)
+    
+                // Jambe 2 
+                objC2D.fillRect(-8,7,7,10)    
+            }
+            
+        }
         else if(garde.binGrimpeEchelle){
             objC2D.fillStyle = couleurTete
             // Dessiner le grimpe echelle du personnage
@@ -1721,8 +2177,11 @@ function dessinerGardes(){
             objC2D.fillRect(1,23,12,4)
         }
         else if(garde.binTomber){
-            objC2D.fillStyle = couleurTete
             // Dessiner le tomber du personnage
+            objC2D.fillStyle = 'cyan'
+            objC2D.fillRect(-1,-21,4,5)
+
+            objC2D.fillStyle = couleurTete
             objC2D.fillRect(-largeurTete/2,-hauteurTete/2 - objGardes.hauteur/4,largeurTete + 2,hauteurTete)
                             
             objC2D.fillStyle = garde.couleurCorps
@@ -1747,8 +2206,11 @@ function dessinerGardes(){
         }
         else{
             if(objStatJeu.temps % 30 <= 10){
-                objC2D.fillStyle = couleurTete
                 // Position Marche 1
+                objC2D.fillStyle = 'cyan'
+                objC2D.fillRect(-1,-21,4,5)
+
+                objC2D.fillStyle = couleurTete
                 objC2D.fillRect(-largeurTete/2,-hauteurTete/2 - objGardes.hauteur/4,largeurTete + 2,hauteurTete)
                         
                 objC2D.fillStyle = garde.couleurCorps
@@ -1775,8 +2237,11 @@ function dessinerGardes(){
     
             }
             else if(objStatJeu.temps % 30 <= 20){
-                objC2D.fillStyle = couleurTete
                 // Position Marche 2
+                objC2D.fillStyle = 'cyan'
+                objC2D.fillRect(-1,-21,4,5)
+
+                objC2D.fillStyle = couleurTete
                 objC2D.fillRect(-largeurTete/2,-hauteurTete/2 - objGardes.hauteur/4,largeurTete + 2,hauteurTete)
                         
                 objC2D.fillStyle = garde.couleurCorps
@@ -1803,6 +2268,12 @@ function dessinerGardes(){
             }
             else if(objStatJeu.temps % 30 <= 30){
                 // Position Marche 3
+
+                //Dessiner le casque
+                objC2D.fillStyle = 'cyan'
+                objC2D.fillRect(-1,-21,4,5)
+
+
                 objC2D.fillStyle = couleurTete            
                 objC2D.fillRect(-largeurTete/2,-hauteurTete/2 - objGardes.hauteur/4,largeurTete + 2,hauteurTete)
                 
@@ -1909,6 +2380,23 @@ function dessinerPointage(){
     objC2D.restore();
 }
 
+function dessinerGameOver(){
+    objC2D.save();
+    if(objStatJeu.intVie <= 0){
+        objC2D.font = '256px impact';
+        objC2D.textAlign = 'center';
+        objC2D.textBaseline = 'middle';
+
+        objC2D.fillStyle = 'yellow';
+        objC2D.fillText("Game Over!",objCanvas.width/2,objCanvas.height/2);
+
+        objC2D.strokeStyle = 'black';
+        objC2D.lineWidth = 5;
+        objC2D.strokeText("Game Over!",objCanvas.width/2,objCanvas.height/2);
+    }
+    objC2D.restore();
+}
+
 
 // ========== Fonctions arbritaires ===================
 
@@ -1916,200 +2404,3 @@ function dessinerPointage(){
 function randInt(min, max) {
     return Math.floor(Math.random() * (Math.floor(max) - Math.ceil(min) + 1) + Math.ceil(min)); 
 }
-
-
-
-
-
-
-
-
-// Changements à déplacer (Il ne sont pas ordonné comme le code du master alors il faut modifier le code d'avantage.)
-
-
-
-var objGardes = [];
-
-/*
-function initGardes(nombreGardes) {
-    objGardes = [];
-    let couleursGardes = ["red", "green", "purple"]; // Couleurs des chandails des gardes
-    let positionsUtilisees = new Set();
-
-    let passerellesDisponibles = objCarteTuile.tabTuile.filter(tuile => tuile.type === 'P');
-
-    for (let i = 0; i < nombreGardes; i++) {
-        let positionValide = false;
-        let positionGarde = null;
-
-        while (!positionValide) {
-            let tuile = passerellesDisponibles[Math.floor(Math.random() * passerellesDisponibles.length)];
-            let positionX = tuile.tuileX * objCarteTuile.xLargeurTuile;
-            let positionY = tuile.tuileY * objCarteTuile.yLargeurTuile - 50;
-
-            let clePosition = `${positionX}-${positionY}`;
-
-            if (!positionsUtilisees.has(clePosition) && !lingotsRamasses.includes(clePosition)) {
-                positionGarde = {
-                    x: positionX,
-                    y: positionY,
-                    couleur: couleursGardes[i % couleursGardes.length],
-                    vitesseX: 1,
-                    vitesseY: 2,
-                    direction: Math.random() < 0.5 ? "gauche" : "droite",
-                    enTrou: false,
-                    tempsDansTrou: 0
-                };
-                positionsUtilisees.add(clePosition);
-                positionValide = true;
-            }
-        }
-        objGardes.push(positionGarde);
-    }
-}
-
-function dessinerGardes() {
-    objC2D.save();
-
-    objGardes.forEach(garde => {
-        dessinerPersonnage(garde.x, garde.y, garde.couleur);
-    });
-
-    objC2D.restore();
-}
-
-// Fonction qui gère le déplacement et la chute des gardes
-function deplacerGardes() {
-    objGardes.forEach(garde => {
-        if (garde.enTrou) {
-            garde.tempsDansTrou++;
-
-            if (garde.tempsDansTrou >= 240) { // 4 secondes (60 FPS * 4)
-                if (trouRebouche(garde.x, garde.y)) {
-                    reinitialiserGarde(garde);
-                } else {
-                    garde.enTrou = false;
-                }
-            }
-            return;
-        }
-
-        // Vérifier si le garde est en train de tomber
-        if (gardeTombe(garde)) {
-            garde.y += garde.vitesseY;
-            return;
-        }
-
-        // Déplacement horizontalement en évitant les obstacles
-        let nouvellePositionX = garde.x + (garde.direction === "gauche" ? -garde.vitesseX : garde.vitesseX);
-
-        if (!collisionMur(nouvellePositionX, garde.y) && !trouDetecte(nouvellePositionX, garde.y)) {
-            garde.x = nouvellePositionX;
-        } else {
-            garde.direction = garde.direction === "gauche" ? "droite" : "gauche";
-        }
-    });
-}
-
-// Vérification si un garde doit tomber
-function gardeTombe(garde) {
-    let positionDessous = { x: garde.x, y: garde.y + 50 };
-
-    return !collisionPasserelle(positionDessous) && !collisionBarre(positionDessous);
-}
-
-// Vérification si un garde touche une passerelle
-function collisionPasserelle(position) {
-    return objCarteTuile.tabTuile.some(tuile =>
-        tuile.type === 'P' && position.y === tuile.tuileY * objCarteTuile.yLargeurTuile
-    );
-}
-
-// Vérification si un garde touche une barre de franchissement
-function collisionBarre(position) {
-    return objCarteTuile.tabTuile.some(tuile =>
-        tuile.type === 'E' && position.y === tuile.tuileY * objCarteTuile.yLargeurTuile
-    );
-}
-
-// Vérification si un garde se trouve devant un trou
-function trouDetecte(x, y) {
-    return objCarteTuile.tabTuile.some(tuile =>
-        tuile.type === 'V' && tuile.tuileX * objCarteTuile.xLargeurTuile === x &&
-        tuile.tuileY * objCarteTuile.yLargeurTuile === y + 50
-    );
-}
-
-// Vérification si un garde touche un mur
-function collisionMur(x, y) {
-    return objMurs.tabMurs.some(mur => x >= mur.xDebut && x <= mur.xFin && y >= mur.yDebut && y <= mur.yFin);
-}
-
-// Vérification si un trou a été rebouché
-function trouRebouche(x, y) {
-    return objCarteTuile.tabTuile.some(tuile =>
-        tuile.type === 'B' && tuile.tuileX * objCarteTuile.xLargeurTuile === x &&
-        tuile.tuileY * objCarteTuile.yLargeurTuile === y
-    );
-}
-
-// Réinitialisation de la position du garde s'il est mort dans un trou rebouché
-function reinitialiserGarde(garde) {
-    let positionsDisponibles = objCarteTuile.tabTuile.filter(tuile => tuile.tuileY === 2);
-    let tuile = positionsDisponibles[Math.floor(Math.random() * positionsDisponibles.length)];
-    garde.x = tuile.tuileX * objCarteTuile.xLargeurTuile;
-    garde.y = tuile.tuileY * objCarteTuile.yLargeurTuile - 50;
-    garde.enTrou = false;
-    garde.tempsDansTrou = 0;
-}
-
-// Duplication du fontion animer(); (Pas bon)
-// // Fonction principale d'animation
-// function animer() {
-//     objCycleAnimation = requestAnimationFrame(animer);
-//     effacerDessin();
-//     deplacerGardes();
-//     dessiner();
-// }
-
-// Fonction dessiner DEBUG (garde pas commenté pour debug)
-function dessinerJoueurDebug() {
-    objC2D.save();
-
-    objC2D.translate(
-        objCarteTuile.xAlignementCarte,
-        objCarteTuile.yAlignementCarte
-    )
-
-    objC2D.fillStyle = 'blue'
-    objC2D.translate(
-        objJoueur.positionX,
-        objJoueur.positionY
-    )
-
-    objC2D.beginPath();
-    objC2D.rect(
-        -objJoueur.largeur/2,
-        -objJoueur.hauteur/2,
-        objJoueur.largeur,
-        objJoueur.hauteur
-    )
-    
-    objC2D.fill();
-
-
-    objC2D.strokeStyle   = 'black';
-    objC2D.beginPath();
-    objC2D.moveTo(-objJoueur.largeur/2 + objJoueur.largeur/2,-objJoueur.hauteur/2);
-    objC2D.lineTo(-objJoueur.largeur/2 + objJoueur.largeur/2,objJoueur.hauteur/2);
-    objC2D.stroke();
-
-    // objC2D.fillStyle = 'pink'
-    // objC2D.beginPath();
-    // objC2D.arc(0,0,5,0,2*Math.PI,false)
-    // objC2D.fill();
-
-    objC2D.restore();
-}
-
-*/
