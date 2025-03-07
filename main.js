@@ -332,8 +332,8 @@ function initJoueur() {
     objJoueur.largeur = 40;
     objJoueur.hauteur = 50;
 
-    objJoueur.positionX = 20*objCarteTuile.xLargeurTuile; // Changer a objCanvas.width/2
-    objJoueur.positionY = 4*objCarteTuile.yLargeurTuile; //775
+    objJoueur.positionX = objCanvas.width/2; // Changer a objCanvas.width/2
+    objJoueur.positionY = 775; //775
 
     objJoueur.vitesseX = 3;
     objJoueur.vitesseY = 2;
