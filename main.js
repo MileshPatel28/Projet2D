@@ -700,11 +700,11 @@ function miseAJourJoueur(){
                     tuile.tuileY == objJoueur.tuileActive.tuileY + 1
             )
     
-            if(objJoueur.direction == -1){
+            if(tuileGauchBas && objJoueur.direction == -1){
                 tuileGauchBas.type = 'T';
                 tuileGauchBas.compteurTuile = 8*60;
             }
-            else if(objJoueur.direction == 1){
+            else if(tuileDroitBas && objJoueur.direction == 1){
                 tuileDroitBas.type = 'T';
                 tuileDroitBas.compteurTuile = 8*60;
             }
@@ -924,12 +924,12 @@ function graviteJoueur() {
         }
     }
     else if(tuileBas.type == 'V' || tuileBas.type == 'T'){
-        if( tuileGauchBas.type != 'V' && 
+        if(tuileGauchBas && tuileGauchBas.type != 'V' && 
             (tuileGauchBas.tuileX + 1 ) * objCarteTuile.xLargeurTuile > objJoueur.positionX - objJoueur.largeur/2
         ){
                 binDescend = false;
         }
-        else if( tuileDroitBas.type != 'V' &&
+        else if(tuileDroitBas && tuileDroitBas.type != 'V' &&
                  (tuileDroitBas.tuileX) * objCarteTuile.xLargeurTuile < objJoueur.positionX + objJoueur.largeur/2
         ){
             binDescend = false;
@@ -940,7 +940,7 @@ function graviteJoueur() {
         binDescend = false;
     }
 
-    if(objJoueur.binGrimpeEchelle){
+    if(objJoueur.binGrimpeEchelle || objJoueur.tuileActive.type == 'E'){
         binDescend = false;
     }
 
@@ -1024,7 +1024,13 @@ function miseAJourGardes(){
                     tuile.tuileY == garde.tuileActive.tuileY
             )
 
-            if(lingotPotentielle.type == 'V'){
+            let paserellePotentielle = garde.tuileEntourage.find(
+                (tuile) => 
+                    tuile.tuileX == garde.tuileActive.tuileX - garde.direction &&
+                    tuile.tuileY == garde.tuileActive.tuileY + 1
+            )
+
+            if(lingotPotentielle.type == 'V' && lingotPotentielle.type == 'P'){
                 lingotPotentielle.type = 'L'
                 garde.binLingot = false;
             }
